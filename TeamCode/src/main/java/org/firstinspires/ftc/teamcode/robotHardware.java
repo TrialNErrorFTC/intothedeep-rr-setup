@@ -226,10 +226,10 @@ public class robotHardware {
 
         servoClaw = myOpMode.hardwareMap.servo.get("claw");
 
-        //setup visionprocessor here
-
-        //setup visionportal here
-        myVisionPortal = VisionPortal.easyCreateWithDefaults(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"), redProcessor);
+//        //setup visionprocessor here
+//
+//        //setup visionportal here
+//        myVisionPortal = VisionPortal.easyCreateWithDefaults(myOpMode.hardwareMap.get(WebcamName.class, "Webcam 1"), redProcessor);
 
     }
 
