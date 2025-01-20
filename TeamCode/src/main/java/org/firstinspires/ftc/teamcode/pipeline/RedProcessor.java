@@ -29,6 +29,9 @@ import android.graphics.Color;
 public class RedProcessor implements VisionProcessor {
     // Create a new Paint object
     Paint paint = new Paint();
+    double angle;
+    Point center;
+    Point[] vertices;
     List<MatOfPoint> contours = new ArrayList<>();
 
 
@@ -99,7 +102,7 @@ public class RedProcessor implements VisionProcessor {
             if (largestContour != null) {
                 MatOfPoint2f largestContour2f = new MatOfPoint2f(largestContour.toArray());
                 RotatedRect rotatedRect = Imgproc.minAreaRect(largestContour2f);
-                Point[] vertices = new Point[4];
+                vertices = new Point[4];
                 rotatedRect.points(vertices);
 
                 for (int j = 0; j < 4; j++) {
@@ -107,11 +110,11 @@ public class RedProcessor implements VisionProcessor {
                 }
 
                 // Draw the center point
-                Point center = rotatedRect.center;
+                center = rotatedRect.center;
                 Imgproc.circle(frame, center, 5, new Scalar(0, 255, 0), -1);
 
                 // Normalize the angle to [-270, 270)
-                double angle = rotatedRect.angle;
+                angle = rotatedRect.angle;
                 if (rotatedRect.size.width < rotatedRect.size.height) {
                     angle = 90 + angle;
                 }
