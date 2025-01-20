@@ -3,15 +3,12 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.robotHardware;
+import org.firstinspires.ftc.teamcode.nonRR.robotHardware;
 
 @TeleOp
-public class robotTeleOp extends LinearOpMode {
-
-    // Initialize the robot hardware.
+public class testCode extends LinearOpMode {
+    //Initialize the robot hardware.
     robotHardware robot = new robotHardware(this);
 
     // Code to run ONCE when the driver hits INIT.
@@ -25,23 +22,58 @@ public class robotTeleOp extends LinearOpMode {
         // Run until the end of the match (driver presses STOP) or until stop is requested.
         if (isStopRequested()) return;
         while (opModeIsActive()) {
-            if (robot.motorAngle1.getCurrentPosition() >= 580) {
-                robot.motorAngle1.setTargetPosition(580);
-                robot.motorAngle2.setTargetPosition(580);
-                robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            }
-
-
-            clawControl();
-            angleControl();
-            extensionControl();
-            driveControl();
+//            if (robot.motorAngle1.getCurrentPosition() >= 580) {
+//                robot.motorAngle1.setTargetPosition(580);
+//                robot.motorAngle2.setTargetPosition(580);
+//                robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            }
+//
+//
+//            clawControl();
+//            angleControl();
+//            extensionControl();
+//            driveControl();
+            testControl();
         }
     }
 
     boolean onOff = false;
 
+    private void testControl(){
+        if (gamepad1.a){
+            robot.frontLeft.setTargetPosition(384);
+            robot.frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontLeft.setPower(1);
+        }
+        if (gamepad1.b){
+            robot.frontRight.setTargetPosition(384);
+            robot.frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontRight.setPower(1);
+        }
+        if (gamepad1.x){
+            robot.rearLeft.setTargetPosition(384);
+            robot.rearLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rearLeft.setPower(1);
+        }
+        if (gamepad1.y){
+            robot.rearRight.setTargetPosition(384);
+            robot.rearRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rearRight.setPower(1);
+        }
+//        if (gamepad1.b){
+//            robot.frontRight.setTargetPosition(384);
+//            robot.frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        }
+//        if (gamepad1.x){
+//            robot.frontLeft.setTargetPosition(384);
+//            robot.frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        }
+//        if (gamepad1.y){
+//            robot.frontLeft.setTargetPosition(384);
+//            robot.frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        }
+    }
     private void clawControl() {
         if (gamepad1.a) {
             robot.servoClaw.setPosition(1.0);
