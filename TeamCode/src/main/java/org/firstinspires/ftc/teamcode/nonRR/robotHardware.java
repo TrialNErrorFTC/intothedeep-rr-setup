@@ -336,24 +336,24 @@ clip final: move angle and arm down
 
  */
     public void setState(States state) {
-//        motorAngle1.setTargetPosition(state.motorAnglePosition);
-//        motorAngle2.setTargetPosition(state.motorAnglePosition);
-//        motorExtension1.setTargetPosition(state.motorExtensionPosition);
-//        motorExtension2.setTargetPosition(state.motorExtensionPosition);
-//
-//        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-//        motorAngle1.setPower(0.5);
-//        motorAngle2.setPower(0.5);
-//        motorExtension1.setPower(0.5);
-//        motorExtension2.setPower(0.5);
-//
-//        swingLeft.setPosition(state.swingLeftPosition);
-//        swingRight.setPosition(state.swingRightPosition);
-//        angle.setPosition(state.anglePosition);
+       motorAngle1.setTargetPosition(state.motorAnglePosition);
+       motorAngle2.setTargetPosition(state.motorAnglePosition);
+       motorExtension1.setTargetPosition(state.motorExtensionPosition);
+       motorExtension2.setTargetPosition(state.motorExtensionPosition);
+
+       motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+       motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+       motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+       motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+       motorAngle1.setPower(0.5);
+       motorAngle2.setPower(0.5);
+       motorExtension1.setPower(0.5);
+       motorExtension2.setPower(0.5);
+
+       swingLeft.setPosition(state.swingLeftPosition);
+       swingRight.setPosition(state.swingRightPosition);
+       angle.setPosition(state.anglePosition);
         telemetry.addData("State", state);
         telemetry.update();
     }
