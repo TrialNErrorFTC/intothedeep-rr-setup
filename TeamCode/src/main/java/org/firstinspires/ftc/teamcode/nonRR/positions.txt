@@ -1,0 +1,12 @@
+What we need to accomplish:
+init pos: swing arm up, claw in, lowest angle, extension dont do anything
+
+pick up: extension out 6 in, swing arm down, servo in,
+camera to center over block, angle at specific position, arm close
+pick up off wall: extension 1 in, swing arm out, claw open, servo down
+
+dropping things: swing arm goes backwards, servo up, extension <<ft>>, 90 deg)(max angle)
+
+clipping things: angle at specific angle, servo down, claw out, swing arm
+
+clip final: move angle and arm down

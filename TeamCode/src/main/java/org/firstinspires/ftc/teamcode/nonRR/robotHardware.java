@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode.nonRR;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -40,6 +42,8 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pipeline.RedProcessor;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.teamcode.nonRR.States;
+
 
 /*
  * This file works in conjunction with the External Hardware Class sample called: ConceptExternalHardwareClass.java
@@ -64,71 +68,58 @@ public class robotHardware {
 
     public static final double DRIVE_MOTOR_TICKS_PER_ROTATION = 384.5;
     public static final double WHEEL_DIAMETER = 96 / 25.4;
-    /* Declare OpMode members. */
-    private LinearOpMode myOpMode = null;   // gain access to methods in the calling OpMode.
-
-    // Define Motor and Servo objects  (Make them private so they can't be accessed externally)
-    //drivetrain
-    public DcMotor frontLeft = null;
-    public DcMotor frontRight = null;
-    public DcMotor rearLeft = null;
-    public DcMotor rearRight = null;
-    public DcMotor[] drivetrainMotors = null;
-    public DcMotor[] liftMotors = null;
-    double k = 1;
-    int tickConversionConstant = (int) (1425.1 / 537.7);
-
-
-    //lift
-    public DcMotor motorAngle1;
-    public DcMotor motorAngle2;
-    public DcMotor motorExtension1;
-    public DcMotor motorExtension2;
-
-    public Servo servoClaw;
-
     // Define constants.  Make them public so they CAN be used by the calling OpMode
     public static int CLAW_INIT_POS = 0;
     public static int CLAW_CLOSE_POS = 0;
     public static int CLAW_OPEN_POS = 0;
 
 
+    // Define Motor and Servo objects  (Make them private so they can't be accessed externally)
+    public DcMotor frontLeft = null;
+    public DcMotor frontRight = null;
+    public DcMotor rearLeft = null;
+    public DcMotor rearRight = null;
+    public DcMotor[] drivetrainMotors = null;
+    public DcMotor[] liftMotors = null;
+    //lift
+    public DcMotor motorAngle1;
+    public DcMotor motorAngle2;
+    public DcMotor motorExtension1;
+    public DcMotor motorExtension2;
+    //claw
+    public Servo claw;
+    public Servo swingLeft;
+    public Servo swingRight;
+    public Servo angle;
+
+    public TouchSensor limitSwitch;
+    public BNO055IMU imu;
+    public States currentState;
+    double k = 1;
+    int tickConversionConstant = (int) (751.8 / 537.7);
     // touch_sensor
     TouchSensor setup_touch;
-
-    public static int EXTEND_INIT_POS = 0;
-    public static int EXTEND_INTAKE_POS = 0;
-    public static int EXTEND_HOLD_POS = 0;
-    public static int EXTEND_LOW_POLE_POS = 125;
-    public static int EXTEND_HIGH_POLE_POS = 250;
-    public static int EXTEND_LOW_BUCKET_POS = 200;
-    public static int EXTEND_HIGH_BUCKET_POS = 1000;
-
-
-    public static int ANGLE_INIT_POS = 0;
-    public static int ANGLE_INTAKE_POS = 0;
-    public static int ANGLE_HOLD_POS = 0;
-    public static int ANGLE_LOW_POLE_POS = 0;
-    public static int ANGLE_HIGH_POLE_POS = 0;
-    public static int ANGLE_LOW_BUCKET_POS = 0;
-    public static int ANGLE_HIGH_BUCKET_POS = 0;
     VisionPortal myVisionPortal;
     RedProcessor redProcessor = new RedProcessor();
+    /*
+    What we need to accomplish:
+    init pos: swing arm up, claw in, lowest angle, extension dont do anything
 
-    public BNO055IMU imu;
+    pick up: extension out 6 in, swing arm down, servo in,
+    camera to center over block, angle at specific position, arm close
+    pick up off wall: extension 1 in, swing arm out, claw open, servo down
 
-    enum States {
-        INTAKE,
-        HOLD,
-        LOW_POLE,
-        HIGH_POLE,
-        LOW_BUCKET,
-        HIGH_BUCKET,
-        HANG,
-    }
+    dropping things: swing arm goes backwards, servo up, extension <<ft>>, 90 deg)(max angle)
 
-    public States currentState;
+    clipping things: angle at specific angle, servo down, claw out, swing arm
 
+    clip final: move angle and arm down
+
+
+
+     */
+    /* Declare OpMode members. */
+    private LinearOpMode myOpMode = null;   // gain access to methods in the calling OpMode.
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public robotHardware(LinearOpMode opmode) {
@@ -223,7 +214,12 @@ public class robotHardware {
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotors = new DcMotor[]{motorAngle1, motorAngle2, motorExtension1, motorExtension2};
 
-        servoClaw = myOpMode.hardwareMap.servo.get("claw");
+        claw = myOpMode.hardwareMap.servo.get("claw");
+        swingLeft = myOpMode.hardwareMap.servo.get("swingLeft");
+        swingRight = myOpMode.hardwareMap.servo.get("swingRight");
+        angle = myOpMode.hardwareMap.servo.get("angle");
+
+        limitSwitch = myOpMode.hardwareMap.touchSensor.get("limit");
 
 //        //setup visionprocessor here
 //
@@ -256,7 +252,6 @@ public class robotHardware {
         motorExtension1.setPower(0);
         motorExtension2.setPower(0);
     }
-
 
     public void up() {
         //TODO: targetPosition +10 to currentPosition
@@ -294,35 +289,6 @@ public class robotHardware {
         motorExtension2.setPower(0.5);
     }
 
-    public double mappedAngle(double angle) {
-        double MAX_ANGLE = 180;
-        double MIN_ANGLE = 0;
-        return angle * 180 / MAX_ANGLE;
-    }
-
-    public double getAnglePower(double angle) {
-        //map angle if needed maybe
-        angle = mappedAngle(angle);
-        double MIN_POWER = 0; //minimum power
-        double MAX_POWER = 0; //max power
-        return MIN_POWER + Math.cos(angle) * MAX_POWER;
-    }
-
-    public double extensionPower(double ticks) {
-        double power = 1.0;
-        if (ticks > 500) {
-            power = 0.8;
-        } else if (ticks >= 500 && ticks < 700) {
-            power = 0.7;
-        } else if (ticks >= 700 && ticks < 900) {
-            power = 0.6;
-        } else if (ticks >= 900 && ticks < 1100) {
-            power = 0.5;
-        } else if (ticks >= 1100 && ticks <= 1300) {
-            power = 0.4;
-        }
-        return power;
-    }
 
     public void extend() {
         //TODO: targetPosition +10 to currentPosition
@@ -348,110 +314,51 @@ public class robotHardware {
         motorExtension2.setPower(1);
     }
 
-    public void setClaw(boolean isOpen) {
-        if (isOpen) {
-            servoClaw.setPosition(0.5);
-        } else {
-            servoClaw.setPosition(0);
-        }
+
+    //    extension = 223
+//    angle = 312
+
+    /*
+What we need to accomplish:
+init pos: swing arm up, claw in, lowest angle, extension dont do anything
+
+pick up: extension out 6 in, swing arm down, servo in,
+camera to center over block, angle at specific position, arm close
+pick up off wall: extension 1 in, swing arm out, claw open, servo down
+
+dropping things: swing arm goes backwards, servo up, extension <<ft>>, 90 deg)(max angle)
+
+clipping things: angle at specific angle, servo down, claw out, swing arm
+
+clip final: move angle and arm down
+
+
+
+ */
+    public void setState(States state) {
+//        motorAngle1.setTargetPosition(state.motorAnglePosition);
+//        motorAngle2.setTargetPosition(state.motorAnglePosition);
+//        motorExtension1.setTargetPosition(state.motorExtensionPosition);
+//        motorExtension2.setTargetPosition(state.motorExtensionPosition);
+//
+//        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
+//        motorAngle1.setPower(0.5);
+//        motorAngle2.setPower(0.5);
+//        motorExtension1.setPower(0.5);
+//        motorExtension2.setPower(0.5);
+//
+//        swingLeft.setPosition(state.swingLeftPosition);
+//        swingRight.setPosition(state.swingRightPosition);
+//        angle.setPosition(state.anglePosition);
+        telemetry.addData("State", state);
+        telemetry.update();
     }
 
-    public void Intake() {
-        motorAngle1.setTargetPosition(ANGLE_INTAKE_POS);
-        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle1.setPower(0.5);
-        motorAngle2.setTargetPosition(ANGLE_INTAKE_POS);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle2.setPower(0.5);
 
-        motorExtension1.setTargetPosition(EXTEND_INTAKE_POS);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension1.setPower(0.5);
-        motorExtension2.setTargetPosition(EXTEND_INTAKE_POS);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension2.setPower(0.5);
-        // clow wil be in controller sepreate loop
-    }
-
-    public void Hold() {
-        motorAngle1.setTargetPosition(ANGLE_HOLD_POS);
-        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle1.setPower(0.5);
-        motorAngle2.setTargetPosition(ANGLE_HOLD_POS);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle2.setPower(0.5);
-
-        motorExtension1.setTargetPosition(EXTEND_HOLD_POS);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension1.setPower(0.5);
-        motorExtension2.setTargetPosition(EXTEND_HOLD_POS);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension2.setPower(0.5);
-    }
-
-    public void LowPole() {
-        motorAngle1.setTargetPosition(ANGLE_LOW_POLE_POS);
-        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle1.setPower(0.5);
-        motorAngle2.setTargetPosition(ANGLE_LOW_POLE_POS);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle2.setPower(0.5);
-
-        motorExtension1.setTargetPosition(EXTEND_LOW_POLE_POS);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension1.setPower(0.5);
-        motorExtension2.setTargetPosition(EXTEND_LOW_POLE_POS);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension2.setPower(0.5);
-    }
-
-    public void HighPole() {
-        motorAngle1.setTargetPosition(ANGLE_HIGH_POLE_POS);
-        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle1.setPower(0.5);
-        motorAngle2.setTargetPosition(ANGLE_HIGH_POLE_POS);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle2.setPower(0.5);
-
-        motorExtension1.setTargetPosition(EXTEND_HIGH_POLE_POS);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension1.setPower(0.5);
-        motorExtension2.setTargetPosition(EXTEND_HIGH_POLE_POS);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension2.setPower(0.5);
-    }
-
-    public void LowBucket() {
-        motorAngle1.setTargetPosition(ANGLE_LOW_BUCKET_POS);
-        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle1.setPower(0.5);
-        motorAngle2.setTargetPosition(ANGLE_LOW_BUCKET_POS);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle2.setPower(0.5);
-
-        motorExtension1.setTargetPosition(EXTEND_LOW_BUCKET_POS);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension1.setPower(0.5);
-        motorExtension2.setTargetPosition(EXTEND_LOW_BUCKET_POS);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension2.setPower(0.5);
-    }
-
-    public void HighBucket() {
-        motorAngle1.setTargetPosition(ANGLE_HIGH_BUCKET_POS);
-        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle1.setPower(0.5);
-        motorAngle2.setTargetPosition(ANGLE_HIGH_BUCKET_POS);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle2.setPower(0.5);
-
-        motorExtension1.setTargetPosition(EXTEND_HIGH_BUCKET_POS);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension1.setPower(0.5);
-        motorExtension2.setTargetPosition(EXTEND_HIGH_BUCKET_POS);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension2.setPower(0.5);
-    }
 
     public int findMaxDistance() {
         //constants
@@ -487,7 +394,6 @@ public class robotHardware {
         return (int) ticks;
     }
 
-
     private int inchesToTicks(double inches) {
         double DIAMETER = 71.3 / 25.4;  //TODO: find diameter
         double CIRCUMFERENCE = DIAMETER * Math.PI;
@@ -501,9 +407,8 @@ public class robotHardware {
     }
 
     public void clawOpen() {
-        servoClaw.setPosition(0);
+        claw.setPosition(0);
     }
-
 
     public void resetDriveEncoders() {
 
@@ -514,7 +419,7 @@ public class robotHardware {
     }
 
     public void clawGrab() {
-        servoClaw.setPosition(0.65);
+        claw.setPosition(0.65);
     }
 
     public void hangInit() {
@@ -539,21 +444,28 @@ public class robotHardware {
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
+
+        //while loop until touch sensor is pressed, lower the arm using run to position
+        while (!limitSwitch.isPressed()) {
+            motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 10);
+            motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 10);
+            motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorAngle1.setPower(0.5);
+            motorAngle2.setPower(0.5);
+        }
         //reset all encoders
         motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        motorAngle1.setTargetPosition(0);
-        motorAngle2.setTargetPosition(0);
-        motorExtension2.setTargetPosition(0);
-        motorExtension1.setTargetPosition(0);
 
-        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorAngle1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorAngle2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
     }
 
@@ -570,20 +482,6 @@ public class robotHardware {
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
-    public void telemetryUpdate(Telemetry telemetry) {
-        myOpMode.telemetry.addData("BL pos", rearLeft.getCurrentPosition());
-        myOpMode.telemetry.addData("BR pos", rearRight.getCurrentPosition());
-        myOpMode.telemetry.addData("FR pos", frontRight.getCurrentPosition());
-        myOpMode.telemetry.addData("FL pos", frontLeft.getCurrentPosition());
-        myOpMode.telemetry.addData("extension1 pos", motorExtension1.getCurrentPosition());
-        myOpMode.telemetry.addData("extension2 pos", motorExtension2.getCurrentPosition());
-        myOpMode.telemetry.addData("angle1 pos", motorAngle1.getCurrentPosition());
-        myOpMode.telemetry.addData("angle2 pos", motorAngle2.getCurrentPosition());
-        myOpMode.telemetry.addData("Max Distance", findMaxDistance());
-        myOpMode.telemetry.addData("Angle Power", getAnglePower(ticksToRadians(motorAngle1.getCurrentPosition())));
-        myOpMode.telemetry.addData("trigger", myOpMode.gamepad1.left_trigger);
-        myOpMode.telemetry.update();
-    }
 
 
 }

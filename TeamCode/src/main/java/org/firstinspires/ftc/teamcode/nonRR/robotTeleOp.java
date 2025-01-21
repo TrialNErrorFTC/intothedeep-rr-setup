@@ -40,10 +40,10 @@ public class robotTeleOp extends LinearOpMode {
 
     private void clawControl() {
         if (gamepad1.a) {
-            robot.servoClaw.setPosition(1.0);
+            robot.claw.setPosition(1.0);
         }
         if (gamepad1.b) {
-            robot.servoClaw.setPosition(0.6);
+            robot.claw.setPosition(0.6);
         }
 
     }
@@ -74,6 +74,27 @@ public class robotTeleOp extends LinearOpMode {
             robot.retract();
         }
 
+    }
+
+    private void presetControl(){
+        if (gamepad1.a){
+            robot.setState(States.INIT);
+        }
+        if (gamepad1.b){
+            robot.setState(States.CLIPINIT);
+        }
+        if (gamepad1.x){
+            robot.setState(States.DROP);
+        }
+        if (gamepad1.y){
+            robot.setState(States.CLIPFINAL);
+        }
+        if (gamepad1.left_bumper){
+            robot.setState(States.PICKUP);
+        }
+        if (gamepad1.right_bumper){
+            robot.setState(States.WALLPICKUP);
+        }
     }
 
     private void testAngleControl() {
@@ -108,15 +129,13 @@ public class robotTeleOp extends LinearOpMode {
 //        else if (gamepad1.right_trigger > 0.5) {
 //            scale = 0.1;
 //        }
-        robot.servoClaw.setPosition(1.0 - gamepad1.right_trigger);
+
+        robot.claw.setPosition(gamepad1.left_trigger);
         double drive = gamepad1.left_stick_y;
         double strafe = -gamepad1.left_stick_x;
         double turn = -gamepad1.right_stick_x;
         robot.startMove(drive, strafe, turn, scale);
-
-        robot.telemetryUpdate(telemetry);
     }
-
 }
 
 

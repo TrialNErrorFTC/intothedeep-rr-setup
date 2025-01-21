@@ -76,10 +76,10 @@ public class testCode extends LinearOpMode {
     }
     private void clawControl() {
         if (gamepad1.a) {
-            robot.servoClaw.setPosition(1.0);
+            robot.claw.setPosition(1.0);
         }
         if (gamepad1.b) {
-            robot.servoClaw.setPosition(0.6);
+            robot.claw.setPosition(0.6);
         }
 
     }
@@ -144,13 +144,13 @@ public class testCode extends LinearOpMode {
 //        else if (gamepad1.right_trigger > 0.5) {
 //            scale = 0.1;
 //        }
-        robot.servoClaw.setPosition(1.0 - gamepad1.right_trigger);
+        robot.claw.setPosition(1.0 - gamepad1.right_trigger);
         double drive = gamepad1.left_stick_y;
         double strafe = -gamepad1.left_stick_x;
         double turn = -gamepad1.right_stick_x;
         robot.startMove(drive, strafe, turn, scale);
 
-        robot.telemetryUpdate(telemetry);
+//        robot.telemetryUpdate(telemetry);
     }
 
 }
