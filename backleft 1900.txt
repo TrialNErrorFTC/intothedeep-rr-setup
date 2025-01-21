@@ -1,0 +1,15 @@
+backleft 1900
+backright 1900
+frontright 1720
+frontleft 1800
+
+axialGain 1
+headingGain 1
+lateralGain 3
+
+initialsetup
+button pressed = 0
+wait at lowest state -> 0 state
+
+
+
