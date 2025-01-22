@@ -29,10 +29,12 @@
 
 package org.firstinspires.ftc.teamcode.nonRR;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -119,10 +121,10 @@ public class robotHardware {
 
      */
     /* Declare OpMode members. */
-    private LinearOpMode myOpMode = null;   // gain access to methods in the calling OpMode.
+    private OpMode myOpMode = null;   // gain access to methods in the calling OpMode.
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
-    public robotHardware(LinearOpMode opmode) {
+    public robotHardware(OpMode opmode) {
         myOpMode = opmode;
     }
 
@@ -182,7 +184,7 @@ public class robotHardware {
 
 
         motorAngle1.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorAngle1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorAngle1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -191,7 +193,7 @@ public class robotHardware {
 
 
         motorAngle2.setDirection(DcMotorSimple.Direction.REVERSE);
-        motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorAngle2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorAngle2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -200,7 +202,7 @@ public class robotHardware {
 
 
         motorExtension1.setDirection(DcMotorSimple.Direction.REVERSE);
-        motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorExtension1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -209,14 +211,16 @@ public class robotHardware {
 
 
         motorExtension2.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotors = new DcMotor[]{motorAngle1, motorAngle2, motorExtension1, motorExtension2};
 
-//        claw = myOpMode.hardwareMap.servo.get("claw");
+        claw = myOpMode.hardwareMap.servo.get("claw");
         swingLeft = myOpMode.hardwareMap.servo.get("swingLeft");
         swingRight = myOpMode.hardwareMap.servo.get("swingRight");
+
+        swingLeft.setDirection(Servo.Direction.REVERSE);
         angle = myOpMode.hardwareMap.servo.get("angle");
 
         limitSwitch = myOpMode.hardwareMap.touchSensor.get("limit");
@@ -345,17 +349,15 @@ clip final: move angle and arm down
        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-       motorAngle1.setPower(0.5);
-       motorAngle2.setPower(0.5);
-       motorExtension1.setPower(0.5);
-       motorExtension2.setPower(0.5);
-
+//
+       motorAngle1.setPower(0.25);
+       motorAngle2.setPower(0.25);
+       motorExtension1.setPower(0.25);
+       motorExtension2.setPower(0.25);
+//
        swingLeft.setPosition(state.swingLeftPosition);
        swingRight.setPosition(state.swingRightPosition);
        angle.setPosition(state.anglePosition);
-        telemetry.addData("State", state);
-        telemetry.update();
     }
 
 
@@ -486,5 +488,51 @@ clip final: move angle and arm down
     }
 
 
+    public void zeroExtension() {
+        myOpMode.gamepad1.setLedColor(255, 0, 2500, 2500);
 
+        motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+    }
+
+    public void zeroAngle() {
+        myOpMode.gamepad1.setLedColor(255, 0, 2500, 2500);
+        boolean lowered = false;
+
+        while (true) {
+            if(limitSwitch.isPressed()){
+                lowered = true;
+                break;
+            }
+            motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 5);
+            motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 5);
+            motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorAngle1.setPower(0.5);
+            motorAngle2.setPower(0.5);
+
+            myOpMode.telemetry.addData("extension1 pos", motorExtension1.getCurrentPosition());
+            myOpMode.telemetry.addData("extension2 pos", motorExtension2.getCurrentPosition());
+            myOpMode.telemetry.addData("angle1 pos", motorAngle1.getCurrentPosition());
+            myOpMode.telemetry.addData("angle2 pos", motorAngle2.getCurrentPosition());
+            myOpMode.telemetry.update();
+
+
+        }
+        if(lowered) {
+            motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            zeroExtension();
+
+            myOpMode.telemetry.addData("extension1 pos", motorExtension1.getCurrentPosition());
+            myOpMode.telemetry.addData("extension2 pos", motorExtension2.getCurrentPosition());
+            myOpMode.telemetry.addData("angle1 pos", motorAngle1.getCurrentPosition());
+            myOpMode.telemetry.addData("angle2 pos", motorAngle2.getCurrentPosition());
+            myOpMode.telemetry.update();
+        }
+    }
 }

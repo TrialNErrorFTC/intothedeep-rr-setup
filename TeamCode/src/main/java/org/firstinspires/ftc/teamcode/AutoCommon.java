@@ -48,7 +48,7 @@ public abstract class AutoCommon extends LinearOpMode {
     public static int ANGLE_LOW_BUCKET_POS = 0;
     public static int ANGLE_HIGH_BUCKET_POS = 0;
 
-    public States state = States.INIT;
+    public States state = States.INITIAL;
     public class Lift {
         public DcMotor motorAngle1;
         public DcMotor motorAngle2;

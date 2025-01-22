@@ -14,7 +14,6 @@ public class robotTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         robot.init();
-        robot.resetEncoders();
         robot.testMode();
         waitForStart();
 
@@ -84,7 +83,7 @@ public class robotTeleOp extends LinearOpMode {
 
     private void presetControl(){
         if (gamepad1.a){
-            robot.setState(States.INIT);
+            robot.setState(States.INITIAL);
         }
         if (gamepad1.b){
             robot.setState(States.CLIPINIT);
