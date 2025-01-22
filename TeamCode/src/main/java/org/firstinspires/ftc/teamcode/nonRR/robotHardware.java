@@ -214,7 +214,7 @@ public class robotHardware {
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotors = new DcMotor[]{motorAngle1, motorAngle2, motorExtension1, motorExtension2};
 
-        claw = myOpMode.hardwareMap.servo.get("claw");
+//        claw = myOpMode.hardwareMap.servo.get("claw");
         swingLeft = myOpMode.hardwareMap.servo.get("swingLeft");
         swingRight = myOpMode.hardwareMap.servo.get("swingRight");
         angle = myOpMode.hardwareMap.servo.get("angle");
@@ -470,16 +470,19 @@ clip final: move angle and arm down
     }
 
     public void testMode() {
-        motorAngle1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorAngle1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorAngle2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
         motorAngle1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motorAngle2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motorExtension1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+    }
+
+    public void telemetryUpdate(){
     }
 
 

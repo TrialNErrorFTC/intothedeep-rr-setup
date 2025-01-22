@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.nonRR.States;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -47,14 +48,13 @@ public abstract class AutoCommon extends LinearOpMode {
     public static int ANGLE_LOW_BUCKET_POS = 0;
     public static int ANGLE_HIGH_BUCKET_POS = 0;
 
-    
+    public States state = States.INIT;
     public class Lift {
         public DcMotor motorAngle1;
         public DcMotor motorAngle2;
         public DcMotor motorExtension1;
         public DcMotor motorExtension2;
         public DcMotor[] liftMotors;
-
     
 
         public Lift(HardwareMap hardwareMap) {
@@ -96,8 +96,10 @@ public abstract class AutoCommon extends LinearOpMode {
 
         }
         public class moveToState implements Action{
+            boolean initalized = false;
             @Override
-            public boolean run(@NonNull TelemetryPacket Packet, States state){
+            public boolean run(@NonNull TelemetryPacket Packet){
+                while (!initalized){
                     motorAngle1.setTargetPosition(state.motorAnglePosition);
                     motorAngle2.setTargetPosition(state.motorAnglePosition);
                     motorExtension1.setTargetPosition(state.motorExtensionPosition);
@@ -113,6 +115,8 @@ public abstract class AutoCommon extends LinearOpMode {
                     motorExtension1.setPower(0.5);
                     motorExtension2.setPower(0.5);
                     telemetry.addData("Arm State", state);
+                    }
+                return false;
             }
         }
 
