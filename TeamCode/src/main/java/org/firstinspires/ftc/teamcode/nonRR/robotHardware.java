@@ -216,7 +216,7 @@ public class robotHardware {
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotors = new DcMotor[]{motorAngle1, motorAngle2, motorExtension1, motorExtension2};
 
-        claw = myOpMode.hardwareMap.servo.get("claw");
+//        claw = myOpMode.hardwareMap.servo.get("claw");
         swingLeft = myOpMode.hardwareMap.servo.get("swingLeft");
         swingRight = myOpMode.hardwareMap.servo.get("swingRight");
 
@@ -358,6 +358,10 @@ clip final: move angle and arm down
        swingLeft.setPosition(state.swingLeftPosition);
        swingRight.setPosition(state.swingRightPosition);
        angle.setPosition(state.anglePosition);
+    }
+
+    public void telemetryUpdate(){
+
     }
 
 
