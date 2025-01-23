@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.nonRR.States;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -31,6 +32,7 @@ public abstract class AutoCommon extends LinearOpMode {
     public static int EXTEND_HIGH_POLE_POS = 250;
     public static int EXTEND_LOW_BUCKET_POS = 200;
     public static int EXTEND_HIGH_BUCKET_POS = 1000;
+
     MecanumDrive drive;
     Claw claw;
     Lift lift;
@@ -45,14 +47,15 @@ public abstract class AutoCommon extends LinearOpMode {
     public static int ANGLE_HIGH_POLE_POS = 0;
     public static int ANGLE_LOW_BUCKET_POS = 0;
     public static int ANGLE_HIGH_BUCKET_POS = 0;
+
+    public States state = States.INITIAL;
     public class Lift {
         public DcMotor motorAngle1;
         public DcMotor motorAngle2;
         public DcMotor motorExtension1;
         public DcMotor motorExtension2;
         public DcMotor[] liftMotors;
-
-
+    
 
         public Lift(HardwareMap hardwareMap) {
             motorAngle1 = hardwareMap.get(DcMotor.class, "motorAngle1");
@@ -92,148 +95,32 @@ public abstract class AutoCommon extends LinearOpMode {
             liftMotors = new DcMotor[]{motorAngle1, motorAngle2, motorExtension1, motorExtension2};
 
         }
-
-        public class Intake implements Action{
-            private boolean initialized = false;
+        public class moveToState implements Action{
+            boolean initalized = false;
             @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized) {
-                    motorAngle1.setTargetPosition(ANGLE_INTAKE_POS);
-                    motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle1.setPower(0.5);
-                    motorAngle2.setTargetPosition(ANGLE_INTAKE_POS);
-                    motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle2.setPower(0.5);
+            public boolean run(@NonNull TelemetryPacket Packet){
+                while (!initalized){
+                    motorAngle1.setTargetPosition(state.motorAnglePosition);
+                    motorAngle2.setTargetPosition(state.motorAnglePosition);
+                    motorExtension1.setTargetPosition(state.motorExtensionPosition);
+                    motorExtension2.setTargetPosition(state.motorExtensionPosition);
 
-                    motorExtension1.setTargetPosition(EXTEND_INTAKE_POS);
+                    motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension1.setPower(0.5);
-                    motorExtension2.setTargetPosition(EXTEND_INTAKE_POS);
                     motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    motorAngle1.setPower(0.5);
+                    motorAngle2.setPower(0.5);
+                    motorExtension1.setPower(0.5);
                     motorExtension2.setPower(0.5);
-                    initialized = true;
-                }
+                    telemetry.addData("Arm State", state);
+                    }
                 return false;
             }
         }
-        public class Hold implements Action{
-            private boolean initialized = false;
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized) {
-                    motorAngle1.setTargetPosition(ANGLE_HOLD_POS);
-                    motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle1.setPower(0.5);
-                    motorAngle2.setTargetPosition(ANGLE_HOLD_POS);
-                    motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle2.setPower(0.5);
 
-                    motorExtension1.setTargetPosition(EXTEND_HOLD_POS);
-                    motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension1.setPower(0.5);
-                    motorExtension2.setTargetPosition(EXTEND_HOLD_POS);
-                    motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension2.setPower(0.5);
-
-                    initialized = true;
-                }
-                return false;
-            }
-        }
-        public class LowPole implements Action{
-            private boolean initialized = false;
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized) {
-                    motorAngle1.setTargetPosition(ANGLE_LOW_POLE_POS);
-                    motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle1.setPower(0.5);
-                    motorAngle2.setTargetPosition(ANGLE_LOW_POLE_POS);
-                    motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle2.setPower(0.5);
-
-                    motorExtension1.setTargetPosition(EXTEND_LOW_POLE_POS);
-                    motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension1.setPower(0.5);
-                    motorExtension2.setTargetPosition(EXTEND_LOW_POLE_POS);
-                    motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension2.setPower(0.5);
-                    initialized = true;
-                }
-                return false;
-            }
-        }
-        public class HighPole implements Action{
-            private boolean initialized = false;
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized) {
-                    motorAngle1.setTargetPosition(ANGLE_HIGH_POLE_POS);
-                    motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle1.setPower(0.5);
-                    motorAngle2.setTargetPosition(ANGLE_HIGH_POLE_POS);
-                    motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle2.setPower(0.5);
-
-                    motorExtension1.setTargetPosition(EXTEND_HIGH_POLE_POS);
-                    motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension1.setPower(0.5);
-                    motorExtension2.setTargetPosition(EXTEND_HIGH_POLE_POS);
-                    motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension2.setPower(0.5);
-
-                    initialized = true;
-                }
-                return false;
-            }
-        }
-        public class LowBucket implements Action{
-            private boolean initialized = false;
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized) {
-                    motorAngle1.setTargetPosition(ANGLE_LOW_BUCKET_POS);
-                    motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle1.setPower(0.5);
-                    motorAngle2.setTargetPosition(ANGLE_LOW_BUCKET_POS);
-                    motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle2.setPower(0.5);
-
-                    motorExtension1.setTargetPosition(EXTEND_LOW_BUCKET_POS);
-                    motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension1.setPower(0.5);
-                    motorExtension2.setTargetPosition(EXTEND_LOW_BUCKET_POS);
-                    motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension2.setPower(0.5);
-                    initialized = true;
-                }
-                return false;
-            }
-        }
-        public class HighBucket implements Action{
-            private boolean initialized = false;
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized) {
-                    motorAngle1.setTargetPosition(ANGLE_HIGH_BUCKET_POS);
-                    motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle1.setPower(0.5);
-                    motorAngle2.setTargetPosition(ANGLE_HIGH_BUCKET_POS);
-                    motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorAngle2.setPower(0.5);
-
-                    motorExtension1.setTargetPosition(EXTEND_HIGH_BUCKET_POS);
-                    motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension1.setPower(0.5);
-                    motorExtension2.setTargetPosition(EXTEND_HIGH_BUCKET_POS);
-                    motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorExtension2.setPower(0.5);
-                    initialized = true;
-                }
-                return false;
-            }
-        }
-        public class LiftUp implements Action{
+        public class telemetryUpdate implements Action{
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                     telemetry.addData("extension1 pos", motorExtension1.getCurrentPosition());

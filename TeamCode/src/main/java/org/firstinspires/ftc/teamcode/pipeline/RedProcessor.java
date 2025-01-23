@@ -15,15 +15,12 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import android.graphics.Paint;
-import android.graphics.Color;
 
 
 public class RedProcessor implements VisionProcessor {
