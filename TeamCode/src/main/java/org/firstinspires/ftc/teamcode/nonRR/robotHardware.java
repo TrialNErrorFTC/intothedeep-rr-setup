@@ -216,7 +216,7 @@ public class robotHardware {
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotors = new DcMotor[]{motorAngle1, motorAngle2, motorExtension1, motorExtension2};
 
-//        claw = myOpMode.hardwareMap.servo.get("claw");
+        claw = myOpMode.hardwareMap.servo.get("claw");
         swingLeft = myOpMode.hardwareMap.servo.get("swingLeft");
         swingRight = myOpMode.hardwareMap.servo.get("swingRight");
 
@@ -339,30 +339,67 @@ clip final: move angle and arm down
 
 
  */
-    public void setState(States state) {
-       motorAngle1.setTargetPosition(state.motorAnglePosition);
-       motorAngle2.setTargetPosition(state.motorAnglePosition);
+    public void setState(States state, boolean changeServo) {
+//        motorExtension1.setTargetPosition(state.motorExtensionPosition);
+//        motorExtension2.setTargetPosition(state.motorExtensionPosition);
+//
+//        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
+//        motorExtension1.setPower(0.5);
+//        motorExtension2.setPower(0.5);
+//
+//
+//        // Wait until extension motors reach their target positions
+//        while (motorExtension1.isBusy() || motorExtension2.isBusy()) {
+//            // Optionally, add telemetry updates or a small delay here
+//        }
+//
+//       motorAngle1.setTargetPosition(state.motorAnglePosition);
+//       motorAngle2.setTargetPosition(state.motorAnglePosition);
+//
+//       motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//       motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
+//       motorAngle1.setPower(0.25);
+//       motorAngle2.setPower(0.25);
+
+       if (changeServo) {
+           swingLeft.setPosition(state.swingLeftPosition);
+           swingRight.setPosition(state.swingRightPosition);
+           angle.setPosition(state.anglePosition);
+       }
+    }
+
+    public void setExtensionState(States state){
        motorExtension1.setTargetPosition(state.motorExtensionPosition);
        motorExtension2.setTargetPosition(state.motorExtensionPosition);
 
-       motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-       motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-       motorAngle1.setPower(0.25);
-       motorAngle2.setPower(0.25);
+
        motorExtension1.setPower(0.25);
        motorExtension2.setPower(0.25);
-//
-       swingLeft.setPosition(state.swingLeftPosition);
-       swingRight.setPosition(state.swingRightPosition);
-       angle.setPosition(state.anglePosition);
+    }
+    public void setAngleState(States state){
+        motorAngle1.setTargetPosition(state.motorAnglePosition);
+        motorAngle2.setTargetPosition(state.motorAnglePosition);
+
+        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorAngle1.setPower(0.25);
+        motorAngle2.setPower(0.25);
     }
 
-    public void telemetryUpdate(){
-
+    public void setServoState(States state){
+        swingLeft.setPosition(state.swingLeftPosition);
+        swingRight.setPosition(state.swingRightPosition);
+        angle.setPosition(state.anglePosition);
     }
+
+
+
 
 
 

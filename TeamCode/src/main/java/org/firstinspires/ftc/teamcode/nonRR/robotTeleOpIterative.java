@@ -15,6 +15,12 @@ public class robotTeleOpIterative extends OpMode {
     @Override
     public void init() {
         robot.init();
+        robot.setServoState(States.INITIAL);
+        robot.motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         robot.zeroExtension();
         robot.zeroAngle();
         robot.testMode();
@@ -28,7 +34,7 @@ public class robotTeleOpIterative extends OpMode {
     // Code to run ONCE when the driver hits PLAY.
     @Override
     public void start() {
-        robot.setState(States.INITIAL);
+        robot.setState(States.INITIAL, true);
     }
     private void presetControl(){
 //        if (gamepad1.a){
@@ -81,14 +87,49 @@ public class robotTeleOpIterative extends OpMode {
         }
 
         if (gamepad1.x){
-            robot.setState(States.DROP);
+//            robot.setExtensionState(States.INITIAL);
+//            while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
+//                telemetry.addLine("extension moving back to inital");
+//                telemetry.update();
+//            }
+//            robot.setAngleState(States.DROP);
+//            while(robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()){
+//                telemetry.addLine("angle moving to drop");
+//                telemetry.update();
+//            }
+//            robot.setExtensionState(States.DROP);
+            robot.setServoState(States.DROP);
             //180 degrees swing arm
         }
+        if (gamepad1.y){
+//            robot.setExtensionState(States.INITIAL);
+//            while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
+//                telemetry.addLine("extension moving back to inital");
+//                telemetry.update();
+//            }
+//            robot.setAngleState(States.PICKUP);
+//            while(robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()){
+//                telemetry.addLine("angle moving to pickup");
+//                telemetry.update();
+//            }
+//            robot.setExtensionState(States.PICKUP);
+            robot.setServoState(States.PICKUP);
+            //180 degrees swing arm
+        }
+        if(gamepad1.left_bumper){
+            robot.setServoState(States.INITIAL);
+        }
+ER
+
+
 //        if (gamepad1.y){
 //            robot.setState(States.CLIPFINAL);
 //        }
-        if (gamepad1.left_bumper){
-            robot.setState(States.PICKUP);
+        if(gamepad1.a){
+            robot.extend(); //this should retract
+        }
+        if(gamepad1.b){
+            robot.retract(); //this should retract
         }
 
 //        if (robot.motorAngle1.getCurrentPosition() >= 580) {

@@ -83,22 +83,22 @@ public class robotTeleOp extends LinearOpMode {
 
     private void presetControl(){
         if (gamepad1.a){
-            robot.setState(States.INITIAL);
+            robot.setState(States.INITIAL, true);
         }
         if (gamepad1.b){
-            robot.setState(States.CLIPINIT);
+            robot.setState(States.CLIPINIT, true);
         }
         if (gamepad1.x){
-            robot.setState(States.DROP);
+            robot.setState(States.DROP, true);
         }
         if (gamepad1.y){
-            robot.setState(States.CLIPFINAL);
+            robot.setState(States.CLIPFINAL, true);
         }
         if (gamepad1.left_bumper){
-            robot.setState(States.PICKUP);
+            robot.setState(States.PICKUP, true);
         }
         if (gamepad1.right_bumper){
-            robot.setState(States.WALLPICKUP);
+            robot.setState(States.WALLPICKUP, true);
         }
     }
 
