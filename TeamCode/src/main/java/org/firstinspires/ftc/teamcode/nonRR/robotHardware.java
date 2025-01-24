@@ -90,8 +90,7 @@ public class robotHardware {
     public DcMotor motorExtension2;
     //claw
     public Servo claw;
-    public Servo swingLeft;
-    public Servo swingRight;
+    public Servo swing;
     public Servo angle;
 
     public TouchSensor limitSwitch;
@@ -217,10 +216,8 @@ public class robotHardware {
         liftMotors = new DcMotor[]{motorAngle1, motorAngle2, motorExtension1, motorExtension2};
 
         claw = myOpMode.hardwareMap.servo.get("claw");
-        swingLeft = myOpMode.hardwareMap.servo.get("swingLeft");
-        swingRight = myOpMode.hardwareMap.servo.get("swingRight");
+        swing = myOpMode.hardwareMap.servo.get("swing");
 
-        swingLeft.setDirection(Servo.Direction.REVERSE);
         angle = myOpMode.hardwareMap.servo.get("angle");
 
         limitSwitch = myOpMode.hardwareMap.touchSensor.get("limit");
@@ -363,12 +360,11 @@ clip final: move angle and arm down
 //
 //       motorAngle1.setPower(0.25);
 //       motorAngle2.setPower(0.25);
-
-       if (changeServo) {
-           swingLeft.setPosition(state.swingLeftPosition);
-           swingRight.setPosition(state.swingRightPosition);
-           angle.setPosition(state.anglePosition);
-       }
+//
+//       if (changeServo) {
+//           swingLeft.setPosition(state.swingPosition);
+//           angle.setPosition(state.anglePosition);
+//       }
     }
 
     public void setExtensionState(States state){
@@ -393,8 +389,7 @@ clip final: move angle and arm down
     }
 
     public void setServoState(States state){
-        swingLeft.setPosition(state.swingLeftPosition);
-        swingRight.setPosition(state.swingRightPosition);
+        swing.setPosition(state.swingPosition);
         angle.setPosition(state.anglePosition);
     }
 

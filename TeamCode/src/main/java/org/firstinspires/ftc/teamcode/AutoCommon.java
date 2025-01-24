@@ -23,7 +23,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 
 @Config
-@Autonomous(name = "BLUE_TEST_AUTO_PIXEL", group = "Autonomous")
+@Autonomous(name = "ccriioup", group = "Autonomous")
 public abstract class AutoCommon extends LinearOpMode {
     public static int EXTEND_INIT_POS = 0;
     public static int EXTEND_INTAKE_POS = 0;
