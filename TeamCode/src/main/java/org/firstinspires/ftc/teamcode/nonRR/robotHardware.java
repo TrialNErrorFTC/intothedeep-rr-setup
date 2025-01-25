@@ -104,6 +104,11 @@ public class robotHardware {
     TouchSensor setup_touch;
     VisionPortal myVisionPortal;
     RedProcessor redProcessor = new RedProcessor();
+    enum onOffStates{
+        off,
+        on
+    };
+
     /*
     What we need to accomplish:
     init pos: swing arm up, claw in, lowest angle, extension dont do anything
@@ -117,6 +122,10 @@ public class robotHardware {
     clipping things: angle at specific angle, servo down, claw out, swing arm
 
     clip final: move angle and arm down
+            enum onOffStates{
+            off,
+            on
+        };
 
 
 
@@ -531,9 +540,8 @@ clip final: move angle and arm down
     public void zeroExtension() {
         myOpMode.gamepad1.setLedColor(255, 0, 2500, 2500);
         boolean lowered = false;
-
         while (true) {
-            if(limitSwitchExtension.isPressed()){
+            if (limitSwitchExtension.isPressed()) {
                 lowered = true;
                 break;
             }
@@ -562,7 +570,10 @@ clip final: move angle and arm down
             myOpMode.telemetry.addData("angle1 pos", motorExtension1.getCurrentPosition());
             myOpMode.telemetry.addData("angle2 pos", motorExtension2.getCurrentPosition());
             myOpMode.telemetry.update();
-        }
+    }
+
+
+
     }
 
     public void zeroAngle() {

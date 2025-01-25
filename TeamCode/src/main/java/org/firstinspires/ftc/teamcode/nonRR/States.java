@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.nonRR;
 
 public enum States {
     INITIAL(0, 0, 0.0, 0),
+    DEFAULT(0, 0, 0.0, (double) 180/300),
     PICKUP(100, -1600, 0.8,  (double) 180 /300),
     WALLPICKUP(100, 100, 0.5,  (double) 180 /300),
     DROP(690, -3500, 0.0,  (double) 180 /300),

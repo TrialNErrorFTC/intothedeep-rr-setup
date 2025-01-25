@@ -63,7 +63,7 @@ public class robotTeleOpIterative extends OpMode {
     public void start() {
         robot.setExtensionState(States.INITIAL);
         while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
-            telemetry.addLine("extension moving back to inital");
+            telemetry.addLine("extension moving back to initial");
             telemetry.update();
         }
         robot.setAngleState(States.INITIAL);
