@@ -93,7 +93,9 @@ public class robotHardware {
     public Servo swing;
     public Servo angle;
 
-    public TouchSensor limitSwitch;
+    public TouchSensor limitSwitchAngle;
+    public TouchSensor limitSwitchExtension;
+
     public BNO055IMU imu;
     public States currentState;
     double k = 1;
@@ -220,7 +222,9 @@ public class robotHardware {
 
         angle = myOpMode.hardwareMap.servo.get("angle");
 
-        limitSwitch = myOpMode.hardwareMap.touchSensor.get("limit");
+        limitSwitchAngle = myOpMode.hardwareMap.touchSensor.get("limitAngle");
+        limitSwitchExtension = myOpMode.hardwareMap.touchSensor.get("limitExtension");
+
 
 //        //setup visionprocessor here
 //
@@ -256,11 +260,11 @@ public class robotHardware {
 
     public void up() {
         //TODO: targetPosition +10 to currentPosition
-        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() + 50);
-        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() + 50);
+        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() + 5);
+        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() + 5);
         //TODO: divide by k for smoothness of closing
-        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 50)));
-        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 50)));
+        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 5)));
+        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 5)));
 
         motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorAngle1.setPower(0.3);
@@ -274,11 +278,11 @@ public class robotHardware {
 
     public void down() {
         //TODO: targetPosition +10 to currentPosition
-        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 50);
-        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 50);
+        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 5);
+        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 5);
         //TODO: divide by k for smoothness of closing
-        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 50)));
-        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 50)));
+        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 5)));
+        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 5)));
 
         motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorAngle1.setPower(0.5);
@@ -374,8 +378,8 @@ clip final: move angle and arm down
        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
        motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-       motorExtension1.setPower(0.25);
-       motorExtension2.setPower(0.25);
+       motorExtension1.setPower(0.5);
+       motorExtension2.setPower(0.5);
     }
     public void setAngleState(States state){
         motorAngle1.setTargetPosition(state.motorAnglePosition);
@@ -445,7 +449,7 @@ clip final: move angle and arm down
     }
 
     public void clawOpen() {
-        claw.setPosition(0);
+        claw.setPosition(0.35);
     }
 
     public void resetDriveEncoders() {
@@ -457,7 +461,7 @@ clip final: move angle and arm down
     }
 
     public void clawGrab() {
-        claw.setPosition(0.65);
+        claw.setPosition(0.5);
     }
 
     public void hangInit() {
@@ -477,70 +481,95 @@ clip final: move angle and arm down
         motorExtension2.setTargetPosition(0);
     }
 
-    public void resetEncoders() {
-        for (DcMotor motor : drivetrainMotors) {
-            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-        //while loop until touch sensor is pressed, lower the arm using run to position
-        while (!limitSwitch.isPressed()) {
-            motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 10);
-            motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 10);
-            motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motorAngle1.setPower(0.5);
-            motorAngle2.setPower(0.5);
-        }
-        //reset all encoders
-        motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-
-        motorAngle1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
-    }
-
-    public void testMode() {
-        motorAngle1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorAngle2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
-        motorAngle1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        motorAngle2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        motorExtension1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-    }
-
+//    public void resetEncoders() {
+//        for (DcMotor motor : drivetrainMotors) {
+//            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        }
+//
+//        //while loop until touch sensor is pressed, lower the arm using run to position
+//        while (!limitSwitch.isPressed()) {
+//            motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 10);
+//            motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 10);
+//            motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            motorAngle1.setPower(0.5);
+//            motorAngle2.setPower(0.5);
+//        }
+//        //reset all encoders
+//        motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//
+//
+//        motorAngle1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        motorAngle2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//
+//    }
+//
+//    public void testMode() {
+//        motorAngle1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        motorAngle2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//
+//        motorAngle1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//        motorAngle2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//        motorExtension1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//        motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//    }
+//
     public void telemetryUpdate(){
     }
 
 
     public void zeroExtension() {
         myOpMode.gamepad1.setLedColor(255, 0, 2500, 2500);
-
-        motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-    }
-
-    public void zeroAngle() {
-        myOpMode.gamepad1.setLedColor(255, 0, 2500, 2500);
         boolean lowered = false;
 
         while (true) {
-            if(limitSwitch.isPressed()){
+            if(limitSwitchExtension.isPressed()){
+                lowered = true;
+                break;
+            }
+            motorExtension1.setTargetPosition(motorExtension1.getCurrentPosition() + 5);
+            motorExtension2.setTargetPosition(motorExtension2.getCurrentPosition() + 5);
+            motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorExtension1.setPower(0.5);
+            motorExtension2.setPower(0.5);
+
+            myOpMode.telemetry.addData("extension1 pos", motorExtension1.getCurrentPosition());
+            myOpMode.telemetry.addData("extension2 pos", motorExtension2.getCurrentPosition());
+            myOpMode.telemetry.addData("angle1 pos", motorAngle1.getCurrentPosition());
+            myOpMode.telemetry.addData("angle2 pos", motorAngle2.getCurrentPosition());
+
+            myOpMode.telemetry.update();
+
+
+        }
+        if(lowered) {
+            motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            myOpMode.telemetry.addData("extension1 pos", motorExtension1.getCurrentPosition());
+            myOpMode.telemetry.addData("extension2 pos", motorExtension2.getCurrentPosition());
+            myOpMode.telemetry.addData("angle1 pos", motorExtension1.getCurrentPosition());
+            myOpMode.telemetry.addData("angle2 pos", motorExtension2.getCurrentPosition());
+            myOpMode.telemetry.update();
+        }
+    }
+
+    public void zeroAngle() {
+        boolean lowered = false;
+
+        while (true) {
+            if(limitSwitchAngle.isPressed()){
                 lowered = true;
                 break;
             }
@@ -562,13 +591,15 @@ clip final: move angle and arm down
         if(lowered) {
             motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            zeroExtension();
+//            zeroExtension();
 
             myOpMode.telemetry.addData("extension1 pos", motorExtension1.getCurrentPosition());
             myOpMode.telemetry.addData("extension2 pos", motorExtension2.getCurrentPosition());
             myOpMode.telemetry.addData("angle1 pos", motorAngle1.getCurrentPosition());
             myOpMode.telemetry.addData("angle2 pos", motorAngle2.getCurrentPosition());
             myOpMode.telemetry.update();
+
+
         }
     }
 }

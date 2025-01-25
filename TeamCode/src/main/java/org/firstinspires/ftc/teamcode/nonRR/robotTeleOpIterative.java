@@ -11,6 +11,19 @@ public class robotTeleOpIterative extends OpMode {
     // Initialize the robot hardware.
     robotHardware robot = new robotHardware(this);
 
+    enum ArmStates {
+        INITIAL,
+        PICKUP,
+        WALLPICKUP,
+        DROP,
+        CLIPFINAL,
+        CLIPINIT,
+        EXTENSIONRESET,
+        ANGLERESET,
+        NONE
+    }
+    ArmStates currentState = ArmStates.NONE;
+    boolean clawToggle;
     // Code to run ONCE when the driver hits INIT.
     @Override
     public void init() {
@@ -21,8 +34,22 @@ public class robotTeleOpIterative extends OpMode {
         robot.motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        robot.zeroExtension();
         robot.zeroAngle();
+
+        robot.motorAngle1.setTargetPosition(0);
+        robot.motorAngle2.setTargetPosition(0);
+        robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+        robot.zeroExtension();
+
+        robot.motorExtension1.setTargetPosition(0);
+        robot.motorExtension2.setTargetPosition(0);
+        robot.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        robot.clawGrab();
 //        robot.testMode();
     }
 
@@ -44,7 +71,7 @@ public class robotTeleOpIterative extends OpMode {
             telemetry.addLine("angle moving to pickup");
             telemetry.update();
         }
-        robot.setServoState(States.INITIAL);
+        robot.setServoState(States.WALLPICKUP);
     }
     private void presetControl(){
 //        if (gamepad1.a){
@@ -53,104 +80,135 @@ public class robotTeleOpIterative extends OpMode {
 //        if (gamepad1.b){
 //            robot.setState(States.CLIPINIT);
 //        }
-
+//
 //        if (gamepad1.right_bumper){
 //            robot.setState(States.WALLPICKUP);
 //        }
     }
 
     private void testControl(){
-        if (gamepad1.left_bumper){
-            robot.swing.setPosition(gamepad1.right_trigger);
-
-        }
-        if (gamepad1.right_bumper){
-            robot.angle.setPosition(gamepad1.right_trigger);
-        }
+//        if (gamepad1.left_bumper){
+//            robot.swing.setPosition(gamepad1.right_trigger);
+//
+//        }
+//        if (gamepad1.right_bumper){
+//            robot.angle.setPosition(gamepad1.right_trigger);
+//        }
     }
 
 
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP.
     @Override
     public void loop() {
-//        Gamepad currentGamepad1 = new Gamepad();
-//        Gamepad currentGamepad2 = new Gamepad();
-//
-//        Gamepad previousGamepad1 = new Gamepad();
-//        Gamepad previousGamepad2 = new Gamepad();
+        switch (currentState){
+            case INITIAL:
+                robot.setServoState(States.INITIAL);
 
-        if(gamepad1.dpad_down){
-            telemetry.addLine("Caution: Please set the arm to the correct position(all the way down) before zeroing the extension. Press dpad_left to confirm.");
-            telemetry.update();
-            if(gamepad1.dpad_left){
+                robot.setExtensionState(States.INITIAL);
+                while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
+                    telemetry.addLine("extension moving back to inital");
+                    telemetry.update();
+                }
+                robot.setAngleState(States.INITIAL);
+                while(robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()){
+                    telemetry.addLine("angle moving to pickup");
+                    telemetry.update();
+                }
+                break;
+            case DROP:
+                robot.setServoState(States.INITIAL);
+                robot.setExtensionState(States.INITIAL);
+                while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
+                    telemetry.addLine("extension moving back to inital");
+                    telemetry.update();
+                }
+                robot.setAngleState(States.DROP);
+                while(robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()){
+                    telemetry.addLine("angle moving to drop");
+                    telemetry.update();
+                }
+                robot.setExtensionState(States.DROP);
+                robot.setServoState(States.DROP);
+                break;
+            case PICKUP:
+                robot.setServoState(States.INITIAL);
+                robot.setExtensionState(States.INITIAL);
+                while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
+                    telemetry.addLine("extension moving back to inital");
+                    telemetry.update();
+                }
+                robot.setAngleState(States.PICKUP);
+                while(robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()){
+                    telemetry.addLine("angle moving to pickup");
+                    telemetry.update();
+                }
+                robot.setExtensionState(States.PICKUP);
+                robot.setServoState(States.PICKUP);
+                break;
+            case ANGLERESET:
+                robot.zeroAngle();
+                break;
+            case EXTENSIONRESET:
                 robot.zeroExtension();
-            }
+                break;
+            default:
+                break;
+
         }
 
-        if(gamepad1.dpad_up){
-            telemetry.addLine("Zeroing the angle. Please make sure the extension is all the way down before proceeding. Press dpad_right to confirm.");
+        if(gamepad2.dpad_down){
+            telemetry.addLine("Zeroing the extension.");
             telemetry.update();
-            if(gamepad1.dpad_right){
-                robot.zeroAngle();
-            }
+            currentState = ArmStates.EXTENSIONRESET;
+
+        }
+
+        if(gamepad2.dpad_up){
+            telemetry.addLine("Zeroing the angle.");
+            telemetry.update();
+            currentState = ArmStates.ANGLERESET;
+
         }
 
         if (gamepad1.square){
-            robot.setServoState(States.DROP);
-            robot.setExtensionState(States.INITIAL);
-            while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
-                telemetry.addLine("extension moving back to inital");
-                telemetry.update();
-            }
-            robot.setAngleState(States.DROP);
-            while(robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()){
-                telemetry.addLine("angle moving to drop");
-                telemetry.update();
-            }
-            robot.setExtensionState(States.DROP);
             //180 degrees swing arm
+            currentState = ArmStates.PICKUP;
+
         }
         if (gamepad1.triangle){
-            robot.setServoState(States.PICKUP);
-            robot.setExtensionState(States.INITIAL);
-            while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
-                telemetry.addLine("extension moving back to inital");
-                telemetry.update();
-            }
-            robot.setAngleState(States.PICKUP);
-            while(robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()){
-                telemetry.addLine("angle moving to pickup");
-                telemetry.update();
-            }
-            robot.setExtensionState(States.PICKUP);
             //180 degrees swing arm
+            currentState = ArmStates.DROP;
+
         }
 
-        if(gamepad1.left_bumper){
-            robot.setServoState(States.INITIAL);
-
-            robot.setExtensionState(States.INITIAL);
-            while(robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()){
-                telemetry.addLine("extension moving back to inital");
-                telemetry.update();
-            }
-            robot.setAngleState(States.INITIAL);
-            while(robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()){
-                telemetry.addLine("angle moving to pickup");
-                telemetry.update();
-            }
+        if(gamepad1.touchpad){
+            currentState = ArmStates.INITIAL;
         }
 
+
+// Using the toggle variable to control the robot.
+        if (gamepad1.left_bumper) {
+            robot.clawOpen();
+        }
+        if (gamepad1.right_bumper){
+            robot.clawGrab();
+        }
 
 
 //        if (gamepad1.y){
 //            robot.setState(States.CLIPFINAL);
 //        }
-        if(gamepad1.cross){
+        if(gamepad2.cross){
             robot.extend(); //this should retract
         }
-        if(gamepad1.circle){
+        if(gamepad2.circle){
             robot.retract(); //this should extend
+        }
+        if(gamepad2.triangle){
+            robot.up();
+        }
+        if(gamepad2.square){
+            robot.down();
         }
 
 //        if (robot.motorAngle1.getCurrentPosition() >= 580) {
@@ -172,9 +230,9 @@ public class robotTeleOpIterative extends OpMode {
         telemetry.addData("swing pos", robot.swing.getPosition());
 
         telemetry.update();
-    }
 
-    boolean onOff = false;
+
+    }
 
     private void driveControl() {
         double scale = 0.6;

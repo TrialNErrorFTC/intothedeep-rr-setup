@@ -14,7 +14,7 @@ public class robotTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         robot.init();
-        robot.testMode();
+//        robot.testMode();
         waitForStart();
 
 
