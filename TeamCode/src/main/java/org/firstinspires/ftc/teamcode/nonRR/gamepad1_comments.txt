@@ -1,0 +1,21 @@
+gamepad2.cross -> extend the arm
+gamepad2.circle -> retract the arm
+gamepad2.square -> increases angle of the arm
+gamepad2.triangle -> decreases angle of the arm
+gamepad2.left_bumper -> open claw
+gamepad2.right_bumper -> close claw
+gamepad2.dpad_up -> reset Extension
+gamepad2.dpad_down -> reset Angle
+
+
+
+
+gamepad1.dpad_up -> interrupt the current action
+gamepad1.square -> move to pickup position
+gamepad1.triangle -> move to drop position
+gamepad1.touchpad -> move to initial position
+gamepad1.dpad_left -> enable manual control
+gamepad1.left_bumper -> open claw
+gamepad1.right_bumper -> close claw
+gamepad1.joysticks -> mecanum drive
+gamepad1.left_trigger -> speed mode

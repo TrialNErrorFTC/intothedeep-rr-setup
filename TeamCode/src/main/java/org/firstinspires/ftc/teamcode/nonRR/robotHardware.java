@@ -98,6 +98,8 @@ public class robotHardware {
 
     public BNO055IMU imu;
     public States currentState;
+    public boolean servoAngleInitialized;
+    public double currentAngle;
     double k = 1;
     int tickConversionConstant = (int) (751.8 / 537.7);
     // touch_sensor
@@ -269,11 +271,11 @@ public class robotHardware {
 
     public void up() {
         //TODO: targetPosition +10 to currentPosition
-        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() + 5);
-        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() + 5);
+        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() + 20);
+        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() + 20);
         //TODO: divide by k for smoothness of closing
-        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 5)));
-        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 5)));
+        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 20)));
+        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 20)));
 
         motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorAngle1.setPower(0.3);
@@ -287,11 +289,11 @@ public class robotHardware {
 
     public void down() {
         //TODO: targetPosition +10 to currentPosition
-        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 5);
-        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 5);
+        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 20);
+        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 20);
         //TODO: divide by k for smoothness of closing
-        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 5)));
-        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 5)));
+        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 20)));
+        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 20)));
 
         motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorAngle1.setPower(0.5);
@@ -458,7 +460,7 @@ clip final: move angle and arm down
     }
 
     public void clawOpen() {
-        claw.setPosition(0.35);
+        claw.setPosition(0.5);
     }
 
     public void resetDriveEncoders() {
@@ -470,7 +472,7 @@ clip final: move angle and arm down
     }
 
     public void clawGrab() {
-        claw.setPosition(0.5);
+        claw.setPosition(0.35);
     }
 
     public void hangInit() {
@@ -576,6 +578,16 @@ clip final: move angle and arm down
 
     }
 
+    public void angleUp(){
+        if(angle.getPosition() < (double) 180/300){
+            angle.setPosition(angle.getPosition() + 0.1);
+        }
+    }
+    public void angleDown(){
+        if(angle.getPosition() > 0){
+            angle.setPosition(angle.getPosition() - 0.1);
+        }
+    }
     public void zeroAngle() {
         boolean lowered = false;
 

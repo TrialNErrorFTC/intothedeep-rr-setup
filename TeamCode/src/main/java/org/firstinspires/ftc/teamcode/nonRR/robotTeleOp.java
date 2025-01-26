@@ -15,7 +15,8 @@ public class robotTeleOp extends LinearOpMode {
         DROP,
         EXTENSIONRESET,
         ANGLERESET,
-        NONE
+        NONE,
+        MANUALCONTROL
     }
 
     enum PickupSubStates {
@@ -86,9 +87,24 @@ public class robotTeleOp extends LinearOpMode {
                     currentState = ArmStates.NONE;
                     break;
                 case NONE:
+                    break;
+                case MANUALCONTROL:
+                    if (gamepad2.cross) {
+                        robot.extend();
+                    }
+                    if (gamepad2.circle) {
+                        robot.retract();
+                    }
+                    if (gamepad2.triangle) {
+                        robot.up();
+                    }
+                    if (gamepad2.square) {
+                        robot.down();
+                    }
+                    break;
                 default:
-                    telemetry.addLine("No valid state or system idle.");
-                    telemetry.update();
+//                    telemetry.addLine("No valid state or system idle.");
+//                    telemetry.update();
                     break;
             }
 
@@ -165,6 +181,7 @@ public class robotTeleOp extends LinearOpMode {
                 pickupSubState = PickupSubStates.START;
                 telemetry.addLine("Pickup state complete!");
                 break;
+
         }
         telemetry.update();
     }
@@ -263,17 +280,8 @@ public class robotTeleOp extends LinearOpMode {
     }
 
     private void adjustmentControl() {
-        if (gamepad2.cross) {
-            robot.extend();
-        }
-        if (gamepad2.circle) {
-            robot.retract();
-        }
-        if (gamepad2.triangle) {
-            robot.up();
-        }
-        if (gamepad2.square) {
-            robot.down();
+        if(gamepad1.dpad_right){
+            currentState = ArmStates.MANUALCONTROL;
         }
     }
 
