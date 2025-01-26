@@ -113,10 +113,12 @@ public class RRPFunc extends LinearOpMode {
         robot.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
+
     private void handlePickupState() {
         robot.setServoState(States.DEFAULT);
         robot.setExtensionState(States.INITIAL);
 
+        // First phase: Retracting extension
         while (robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()) {
             telemetry.addLine("Retracting extension...");
             driveControl();
@@ -124,21 +126,19 @@ public class RRPFunc extends LinearOpMode {
             presetControl();
             angleControl();
 
-            //if another preset is played is pressed stop the code
-            if(currentState != ArmStates.PICKUP){
-
-                //stops the code
-                robot.motorAngle1.setPower(0);
-                robot.motorAngle2.setPower(0);
+            // If the state changes, stop all motors for extension and angle
+            if (currentState != ArmStates.PICKUP) {
                 robot.motorExtension1.setPower(0);
                 robot.motorExtension2.setPower(0);
-                return;
-
+                robot.motorAngle1.setPower(0);
+                robot.motorAngle2.setPower(0);
+                return; // Exit the method
             }
-            telemetry.update();
 
+            telemetry.update();
         }
 
+        // Second phase: Moving angle to pickup position
         robot.setAngleState(States.PICKUP);
         while (robot.motorAngle1.isBusy() || robot.motorAngle2.isBusy()) {
             telemetry.addLine("Moving angle to pickup...");
@@ -147,20 +147,19 @@ public class RRPFunc extends LinearOpMode {
             presetControl();
             angleControl();
 
-            //if another preset is played is pressed stop the code
-            if(currentState != ArmStates.PICKUP){
-
-                //stops the code
-                robot.motorAngle1.setPower(0);
-                robot.motorAngle2.setPower(0);
+            // If the state changes, stop all motors for extension and angle
+            if (currentState != ArmStates.PICKUP) {
                 robot.motorExtension1.setPower(0);
                 robot.motorExtension2.setPower(0);
-                return;
-
+                robot.motorAngle1.setPower(0);
+                robot.motorAngle2.setPower(0);
+                return; // Exit the method
             }
+
             telemetry.update();
         }
 
+        // Third phase: Extending to pickup position
         robot.setExtensionState(States.PICKUP);
         while (robot.motorExtension1.isBusy() || robot.motorExtension2.isBusy()) {
             telemetry.addLine("Extending to pickup...");
@@ -169,21 +168,19 @@ public class RRPFunc extends LinearOpMode {
             presetControl();
             angleControl();
 
-            //if another preset is played is pressed stop the code
-            if(currentState != ArmStates.PICKUP){
-
-                //stops the code
-                robot.motorAngle1.setPower(0);
-                robot.motorAngle2.setPower(0);
+            // If the state changes, stop all motors for extension and angle
+            if (currentState != ArmStates.PICKUP) {
                 robot.motorExtension1.setPower(0);
                 robot.motorExtension2.setPower(0);
-                return;
-
+                robot.motorAngle1.setPower(0);
+                robot.motorAngle2.setPower(0);
+                return; // Exit the method
             }
-            telemetry.update();
 
+            telemetry.update();
         }
 
+        // Final phase: Setting the servo to pickup state
         robot.setServoState(States.PICKUP);
         telemetry.addLine("Pickup state complete!");
         telemetry.update();

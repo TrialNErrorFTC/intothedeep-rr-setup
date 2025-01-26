@@ -578,16 +578,7 @@ clip final: move angle and arm down
 
     }
 
-    public void angleUp(){
-        if(angle.getPosition() < (double) 180/300){
-            angle.setPosition(angle.getPosition() + 0.1);
-        }
-    }
-    public void angleDown(){
-        if(angle.getPosition() > 0){
-            angle.setPosition(angle.getPosition() - 0.1);
-        }
-    }
+
     public void zeroAngle() {
         boolean lowered = false;
 
