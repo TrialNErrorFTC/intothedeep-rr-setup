@@ -27,7 +27,7 @@ public class RRPFunc extends LinearOpMode {
         if (opModeInInit()) {
             robot.init();
             robot.setServoState(States.INITIAL);
-            resetMotors();
+//            resetMotors();
         }
 
         waitForStart();
@@ -76,6 +76,7 @@ public class RRPFunc extends LinearOpMode {
             presetControl();
             clawControl();
             driveControl();
+            angleControl();
             // Debugging telemetry
             telemetry.addData("Extension 1 Pos", robot.motorExtension1.getCurrentPosition());
             telemetry.addData("Extension 2 Pos", robot.motorExtension2.getCurrentPosition());
@@ -127,7 +128,7 @@ public class RRPFunc extends LinearOpMode {
             angleControl();
 
             // If the state changes, stop all motors for extension and angle
-            if (currentState != ArmStates.PICKUP) {
+            if (gamepad1.dpad_up) {
                 robot.motorExtension1.setPower(0);
                 robot.motorExtension2.setPower(0);
                 robot.motorAngle1.setPower(0);
@@ -170,10 +171,22 @@ public class RRPFunc extends LinearOpMode {
 
             // If the state changes, stop all motors for extension and angle
             if (currentState != ArmStates.PICKUP) {
-                robot.motorExtension1.setPower(0);
-                robot.motorExtension2.setPower(0);
-                robot.motorAngle1.setPower(0);
-                robot.motorAngle2.setPower(0);
+                robot.motorAngle1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+                robot.motorAngle2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+                robot.motorExtension1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+                robot.motorExtension2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+
+
+                robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                robot.motorAngle1.setPower(0.5);
+                robot.motorAngle2.setPower(0.5);
+                robot.motorExtension1.setPower(0.5);
+                robot.motorExtension2.setPower(0.5);
                 return; // Exit the method
             }
 
@@ -196,7 +209,6 @@ public class RRPFunc extends LinearOpMode {
             clawControl();
             presetControl();
             angleControl();
-
             //if another preset is played is pressed stop the code
             if(currentState != ArmStates.DROP){
 
@@ -224,13 +236,26 @@ public class RRPFunc extends LinearOpMode {
             if(currentState != ArmStates.DROP){
 
                 //stops the code
-                robot.motorAngle1.setPower(0);
-                robot.motorAngle2.setPower(0);
-                robot.motorExtension1.setPower(0);
-                robot.motorExtension2.setPower(0);
-                return;
+                robot.motorAngle1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+                robot.motorAngle2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+                robot.motorExtension1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+                robot.motorExtension2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+
+
+                robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                robot.motorAngle1.setPower(0.5);
+                robot.motorAngle2.setPower(0.5);
+                robot.motorExtension1.setPower(0.5);
+                robot.motorExtension2.setPower(0.5);                return;
 
             }
+//            robot.motorExtension1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//            robot.motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             telemetry.update();
 
         }
@@ -247,10 +272,22 @@ public class RRPFunc extends LinearOpMode {
             if(currentState != ArmStates.DROP){
 
                 //stops the code
-                robot.motorAngle1.setPower(0);
-                robot.motorAngle2.setPower(0);
-                robot.motorExtension1.setPower(0);
-                robot.motorExtension2.setPower(0);
+                robot.motorAngle1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+                robot.motorAngle2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+                robot.motorExtension1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+                robot.motorExtension2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+
+
+                robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                robot.motorAngle1.setPower(0.5);
+                robot.motorAngle2.setPower(0.5);
+                robot.motorExtension1.setPower(0.5);
+                robot.motorExtension2.setPower(0.5);
                 return;
 
             }
@@ -264,8 +301,8 @@ public class RRPFunc extends LinearOpMode {
     }
     private void angleControl() {
         double minAngle = 0.0; // Minimum angle for the claw servo
-        double maxAngle = 180.0; // Maximum angle for the claw servo (change to 300.0 if needed)
-        double angleStep = 5.0; // Step size for increment/decrement in degrees
+        double maxAngle = 225.0; // Maximum angle for the claw servo (change to 300.0 if needed)
+        double angleStep = 4.0; // Step size for increment/decrement in degrees
 
         // Static variable to store the current angle
         if (!robot.servoAngleInitialized) {
@@ -276,8 +313,10 @@ public class RRPFunc extends LinearOpMode {
         // Increment angle with one button, decrement with another
         if (gamepad2.dpad_left && robot.currentAngle <= maxAngle - angleStep) {
             robot.currentAngle += angleStep;
+            sleep(100);
         } else if (gamepad2.dpad_right && robot.currentAngle >= minAngle + angleStep) {
             robot.currentAngle -= angleStep;
+            sleep(100);
         }
 
         // Normalize the angle to a servo position (0.0 to 1.0)
@@ -342,23 +381,70 @@ public class RRPFunc extends LinearOpMode {
         telemetry.addLine("Initial state complete!");
         telemetry.update();
     }
+    public void autonomous(){
 
+        robot.frontLeft.setPower(-0.5);
+        robot.rearRight.setPower(-0.5);
+        robot.frontRight.setPower(0.5);
+        robot.rearLeft.setPower(0.5);
+       sleep(2000);
+        robot.frontLeft.setPower(0);
+        robot.rearRight.setPower(0);
+        robot.frontRight.setPower(0);
+        robot.rearLeft.setPower(0);
+
+
+    }
     private void handleManualControl() {
-        if(currentState != ArmStates.MANUALCONTROL){
+//        robot.motorAngle1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+//        robot.motorAngle2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+//        robot.motorExtension1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+//        robot.motorExtension2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+//
+//
+//        robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        robot.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        robot.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
+//
+//        robot.motorAngle1.setPower(0.5);
+//        robot.motorAngle2.setPower(0.5);
+//        robot.motorExtension1.setPower(0.5);
+//        robot.motorExtension2.setPower(0.5);
 
-            //stops the code
-            robot.motorAngle1.setPower(0);
-            robot.motorAngle2.setPower(0);
-            robot.motorExtension1.setPower(0);
-            robot.motorExtension2.setPower(0);
+        if(currentState != ArmStates.MANUALCONTROL){
             return;
 
         } else if (gamepad2.cross) {
             robot.extend();
+//            robot.motorAngle1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+//            robot.motorAngle2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+//            robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.motorAngle1.setPower(0.5);
+//            robot.motorAngle2.setPower(0.5);
+
+
         } else if (gamepad2.circle) {
             robot.retract();
+//            robot.motorAngle1.setTargetPosition(robot.motorAngle1.getCurrentPosition());
+//            robot.motorAngle2.setTargetPosition(robot.motorAngle2.getCurrentPosition());
+//            robot.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.motorAngle1.setPower(0.5);
+//            robot.motorAngle2.setPower(0.5);
+            
         } else if (gamepad2.triangle) {
             robot.up();
+//            robot.motorExtension1.setTargetPosition(robot.motorExtension1.getCurrentPosition());
+//            robot.motorExtension2.setTargetPosition(robot.motorExtension2.getCurrentPosition());
+//            robot.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.motorExtension1.setPower(0.5);
+//            robot.motorExtension2.setPower(0.5);
+
+
         } else if (gamepad2.square) {
             robot.down();
         }

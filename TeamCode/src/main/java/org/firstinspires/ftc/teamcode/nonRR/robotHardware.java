@@ -32,6 +32,8 @@ package org.firstinspires.ftc.teamcode.nonRR;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
+import static java.lang.Thread.sleep;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -271,11 +273,11 @@ public class robotHardware {
 
     public void up() {
         //TODO: targetPosition +10 to currentPosition
-        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() + 20);
-        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() + 20);
+        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() + 30);
+        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() + 30);
         //TODO: divide by k for smoothness of closing
-        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 20)));
-        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 20)));
+        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 30)));
+        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() + (tickConversionConstant * 30)));
 
         motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorAngle1.setPower(0.3);
@@ -289,11 +291,11 @@ public class robotHardware {
 
     public void down() {
         //TODO: targetPosition +10 to currentPosition
-        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 20);
-        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 20);
+        motorAngle1.setTargetPosition(motorAngle1.getCurrentPosition() - 30);
+        motorAngle2.setTargetPosition(motorAngle2.getCurrentPosition() - 30);
         //TODO: divide by k for smoothness of closing
-        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 20)));
-        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 20)));
+        motorExtension1.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 30)));
+        motorExtension2.setTargetPosition(checkMaxDistance(motorExtension2.getCurrentPosition() - (tickConversionConstant * 30)));
 
         motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorAngle1.setPower(0.5);
@@ -383,7 +385,16 @@ clip final: move angle and arm down
     }
 
     public void setExtensionState(States state){
-       motorExtension1.setTargetPosition(state.motorExtensionPosition);
+        motorAngle1.setTargetPosition(state.motorAnglePosition);
+        motorAngle2.setTargetPosition(state.motorAnglePosition);
+
+        motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorAngle1.setPower(0.5);
+        motorAngle2.setPower(0.5);
+
+        motorExtension1.setTargetPosition(state.motorExtensionPosition);
        motorExtension2.setTargetPosition(state.motorExtensionPosition);
 
        motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -492,6 +503,21 @@ clip final: move angle and arm down
         motorExtension2.setTargetPosition(0);
     }
 
+    public void autonomous(){
+
+        frontLeft.setPower(-0.5);
+        rearRight.setPower(-0.5);
+        frontRight.setPower(0.5);
+        rearLeft.setPower(0.5);
+//        myOpMode.sleep(2000);
+        frontLeft.setPower(0);
+        rearRight.setPower(0);
+        frontRight.setPower(0);
+        rearLeft.setPower(0);
+
+
+    }
+
 //    public void resetEncoders() {
 //        for (DcMotor motor : drivetrainMotors) {
 //            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -547,8 +573,8 @@ clip final: move angle and arm down
                 lowered = true;
                 break;
             }
-            motorExtension1.setTargetPosition(motorExtension1.getCurrentPosition() + 5);
-            motorExtension2.setTargetPosition(motorExtension2.getCurrentPosition() + 5);
+            motorExtension1.setTargetPosition(motorExtension1.getCurrentPosition() + 20);
+            motorExtension2.setTargetPosition(motorExtension2.getCurrentPosition() + 20);
             motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             motorExtension1.setPower(0.5);
