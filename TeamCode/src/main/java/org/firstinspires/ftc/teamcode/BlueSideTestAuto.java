@@ -29,7 +29,7 @@ import org.firstinspires.ftc.teamcode.nonRR.States;
 @Autonomous(name = "BLUE_TEST_AUTO_PIXEL", group = "Autonomous")
 public class BlueSideTestAuto extends LinearOpMode {
 
-    public class RobotHardware {
+    public class RobotHardware{
         public static final double DRIVE_MOTOR_TICKS_PER_ROTATION = 384.5;
         public static final double WHEEL_DIAMETER = 96 / 25.4;
 
