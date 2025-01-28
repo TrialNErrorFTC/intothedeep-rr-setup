@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class SkeletonWithArmActions extends LinearOpMode {
-    int extensionPosition = 0;
+    int extensionPosition = 100;
     int anglePosition = 0;
     Lift lift;
 
@@ -24,36 +24,31 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
             lift = new Lift(hardwareMap);
         }
 
-        public class setLiftPosition implements Action {
+        public class setExtensionPosition implements Action {
             private boolean initialized = false;
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized){
                     //set position of lift
-                    lift.motorAngle1.setTargetPosition(anglePosition);
-                    lift.motorAngle2.setTargetPosition(anglePosition);
                     lift.motorExtension1.setTargetPosition(extensionPosition);
                     lift.motorExtension2.setTargetPosition(extensionPosition);
 
                     //set mode to run to position
-                    lift.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    lift.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     lift.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     lift.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    //finish
+                    lift.motorExtension1.setPower(0.25);
+                    lift.motorExtension2.setPower(0.25);
 
-
-                }
-
-                initialized = true;
-                return false;
-
+                    if (Math.abs(lift.motorExtension1.getCurrentPosition() - extensionPosition) < 10){
+                        return false;
+                    } else {
+                        return true;
+                    }
             }
         }
-        public Action setLiftPosition() {
-            return new setLiftPosition();
+        public Action setExtensionPosition() {
+            return new setExtensionPosition();
         }
 
 
@@ -72,7 +67,7 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
             }
         }
         public Action retainPosition() {
-            return new setLiftPosition();
+            return new retainPosition();
         }
 
         public class manualExtend implements Action {
@@ -89,7 +84,7 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
             }
         }
         public Action manualExtend() {
-            return new setLiftPosition();
+            return new manualExtend();
         }
         public class manualRetract implements Action {
             private boolean initialized = false;
@@ -106,7 +101,7 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
             }
         }
         public Action manualRetract() {
-            return new setLiftPosition();
+            return new manualRetract();
         }
         public class manualUp implements Action {
             private boolean initialized = false;
@@ -122,7 +117,7 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
             }
         }
         public Action manualUp() {
-            return new setLiftPosition();
+            return new manualUp();
         }
         public class manualDown implements Action {
             private boolean initialized = false;
@@ -139,7 +134,7 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
             }
         }
         public Action manualDown() {
-            return new setLiftPosition();
+            return new manualDown();
         }
 
     }
