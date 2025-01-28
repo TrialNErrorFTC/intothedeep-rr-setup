@@ -401,6 +401,7 @@ public class BlueSideTestAuto extends LinearOpMode {
                         robot.setExtensionState(States.DROP),
                         robot.setAngleState(States.DROP)
                 )
+
         );
     }
 }
