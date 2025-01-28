@@ -27,7 +27,7 @@ public class RRPFunc extends LinearOpMode {
         if (opModeInInit()) {
             robot.init();
             robot.setServoState(States.INITIAL);
-//            resetMotors();
+            resetMotors();
         }
 
         waitForStart();
