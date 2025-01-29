@@ -115,7 +115,7 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
                 telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
                 telemetry.update();
 
-                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y), -gamepad1.right_stick_x));
+                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.x + gamepad1.left_stick_x, (pose.y - gamepad1.left_stick_y)), (pose.heading-gamepad1.right_stick_x)));
                 drive.updatePoseEstimate();
                 if (gamepad1.dpad_up) {
                     runningActions.add(lift.manualUp());
