@@ -98,51 +98,63 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
 //
 //        }
 
-        @Override
-        public void runOpMode() throws InterruptedException {
-            Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(90));
-            MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
-            LiftWithActions lift = new LiftWithActions();
+    @Override
+    public void runOpMode() throws InterruptedException {
+        Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(90));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+        LiftWithActions lift = new LiftWithActions();
+        Pose2d pose;
 
-            waitForStart();
+        waitForStart();
 
-            while (opModeIsActive()) {
-                drive.updatePoseEstimate();
+        while (opModeIsActive()) {
+            drive.updatePoseEstimate();
 
-                Pose2d pose = drive.localizer.getPose();
-                telemetry.addData("x", pose.position.x);
-                telemetry.addData("y", pose.position.y);
-                telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
-                telemetry.update();
+            pose = drive.localizer.getPose();
+            telemetry.addData("x", pose.position.x);
+            telemetry.addData("y", pose.position.y);
+            telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+            telemetry.update();
 
-                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.x + gamepad1.left_stick_x, (pose.y - gamepad1.left_stick_y)), (pose.heading-gamepad1.right_stick_x)));
-                drive.updatePoseEstimate();
-                if (gamepad1.dpad_up) {
-                    runningActions.add(lift.manualUp());
-                }
-                if (gamepad1.dpad_down) {
-                    runningActions.add(lift.manualDown());
-                }
-                if (gamepad1.dpad_right) {
-                    runningActions.add(lift.manualExtend());
-                }
-                if (gamepad1.dpad_left) {
-                    runningActions.add(lift.manualRetract());
-                }
-
-                List<Action> newActions = new ArrayList<>();
-                for (Action action : runningActions) {
-                    if (!action.run(packet)) {
-                        newActions.add(action);
-                    }
-                }
-                runningActions = newActions;
-
-                TelemetryPacket packet = new TelemetryPacket();
-                packet.fieldOverlay().setStroke("#3F51B5");
-                Drawing.drawRobot(packet.fieldOverlay(), pose);
-                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            // Some issues in this line. Forgetting to reference position properly.
+            //drive.setDrivePowers(new Pose2d(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x));
+            drive.updatePoseEstimate();
+            if (gamepad1.dpad_up) {
+                runningActions.add(lift.manualUp());
             }
+            if (gamepad1.dpad_down) {
+                runningActions.add(lift.manualDown());
+            }
+            if (gamepad1.dpad_right) {
+                runningActions.add(lift.manualExtend());
+            }
+            if (gamepad1.dpad_left) {
+                runningActions.add(lift.manualRetract());
+            }
+
+            List<Action> newActions = new ArrayList<>();
+            for (Action action : runningActions) {
+                newActions.add(action);
+                //if (!action.run(packet)) { // This is not how you run this method
+
+                //}
+            }
+
+            // Run all actions sequentially
+            Actions.runBlocking(
+                    new SequentialAction(
+                        newActions
+                    )
+            );
+
+
+            runningActions = newActions;
+
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.fieldOverlay().setStroke("#3F51B5");
+            Drawing.drawRobot(packet.fieldOverlay(), pose);
+            FtcDashboard.getInstance().sendTelemetryPacket(packet);
         }
     }
+}
 
