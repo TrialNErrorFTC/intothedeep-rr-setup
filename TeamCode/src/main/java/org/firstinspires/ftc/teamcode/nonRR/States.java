@@ -6,8 +6,8 @@ public enum States {
     PICKUP(100, -1600, 0.8,  (double) 225/300),
     WALLPICKUP(100, 100, 0.5,  (double) 225/300),
     DROP(690, -4700, 0.0,  (double) 225/300),
-    CLIPFINAL(200, 200, 0.35,  (double) 225/300),
-    CLIPINIT(250, 250, 0.15,  (double) 225/300);
+    CLIPFINAL((int) (90 * 4.2 * 537.7/360), 200, 0.35,  (double) 225/300),
+    CLIPINIT((int) (90 * 4.2 * 537.7/360), 250, 0.15,  (double) 225/300);
 
     public final int motorAnglePosition;
     public final int motorExtensionPosition;
