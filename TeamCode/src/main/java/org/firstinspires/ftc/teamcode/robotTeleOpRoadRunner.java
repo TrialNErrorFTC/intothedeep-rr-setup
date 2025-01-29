@@ -119,23 +119,39 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
 
             // Some issues in this line. Forgetting to reference position properly.
             //drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.position.x + gamepad1.left_stick_x, pose.position.y - gamepad1.left_stick_y), pose.heading.toDouble()-gamepad1.right_stick_x));
-            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(gamepad1.left_stick_y, gamepad1.left_stick_x), -gamepad1.right_stick_x));
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(gamepad1.left_stick_x, gamepad1.left_stick_y), -gamepad1.right_stick_x));
 
 
+            Action manualUpButtonAction = new ParallelAction(
+                lift.manualUp(),
+                lift.retainExtensionPosition()
+            );
+            Action manualDownButtonAction = new ParallelAction(
+                lift.manualDown(),
+                lift.retainExtensionPosition()
+            );
+            Action manualExtendButtonAction = new ParallelAction(
+                lift.manualExtend(),
+                lift.retainAnglePosition()
+            );
+            Action manualRetractButtonAction = new ParallelAction(
+                lift.manualRetract(),
+                lift.retainAnglePosition()
+            );
 
             //drive.setDrivePowers(new Pose2d(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x));
             drive.updatePoseEstimate();
             if (gamepad1.dpad_up) {
-                runningActions.add(lift.manualUp());
+                runningActions.add(manualUpButtonAction);
             }
             if (gamepad1.dpad_down) {
-                runningActions.add(lift.manualDown());
+                runningActions.add(manualDownButtonAction);
             }
             if (gamepad1.dpad_right) {
-                runningActions.add(lift.manualExtend());
+                runningActions.add(manualExtendButtonAction);
             }
             if (gamepad1.dpad_left) {
-                runningActions.add(lift.manualRetract());
+                runningActions.add(manualRetractButtonAction);
             }
 
             List<Action> newActions = new ArrayList<>();
