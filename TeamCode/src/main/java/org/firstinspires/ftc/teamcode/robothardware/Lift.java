@@ -53,6 +53,7 @@ public class Lift {
             motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motorExtension1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motorExtension1Encoder = new OverflowEncoder(new RawEncoder(motorExtension1));
+            motorExtension1Encoder.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
 
@@ -64,6 +65,7 @@ public class Lift {
             motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motorExtension2Encoder = new OverflowEncoder(new RawEncoder(motorExtension2));
+            motorExtension2Encoder.setDirection(DcMotorSimple.Direction.FORWARD);
 
         }
     }
