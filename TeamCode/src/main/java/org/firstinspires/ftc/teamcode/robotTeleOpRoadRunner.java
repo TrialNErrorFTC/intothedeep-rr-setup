@@ -117,6 +117,8 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
             telemetry.update();
 
             // Some issues in this line. Forgetting to reference position properly.
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.position.x + gamepad1.left_stick_x, (pose.position.y - gamepad1.left_stick_y)), (pose.heading.toDouble()-gamepad1.right_stick_x)));
+
             //drive.setDrivePowers(new Pose2d(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x));
             drive.updatePoseEstimate();
             if (gamepad1.dpad_up) {
