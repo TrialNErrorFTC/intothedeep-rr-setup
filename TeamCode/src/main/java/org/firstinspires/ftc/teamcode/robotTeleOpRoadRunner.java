@@ -15,6 +15,7 @@ import com.acmerobotics.roadrunner.ftc.MecanumMotorDirectionDebugger;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.nonRR.States;
 import org.firstinspires.ftc.teamcode.robothardware.Lift;
 
@@ -117,7 +118,10 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
             telemetry.update();
 
             // Some issues in this line. Forgetting to reference position properly.
-            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.position.x + gamepad1.left_stick_x, (pose.position.y - gamepad1.left_stick_y)), (pose.heading.toDouble()-gamepad1.right_stick_x)));
+            //drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.position.x + gamepad1.left_stick_x, pose.position.y - gamepad1.left_stick_y), pose.heading.toDouble()-gamepad1.right_stick_x));
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(gamepad1.left_stick_y, gamepad1.left_stick_x), -gamepad1.right_stick_x));
+
+
 
             //drive.setDrivePowers(new Pose2d(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x));
             drive.updatePoseEstimate();
@@ -137,6 +141,7 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
             List<Action> newActions = new ArrayList<>();
             for (Action action : runningActions) {
                 newActions.add(action);
+                telemetry.addData(action.toString(), action);
                 //if (!action.run(packet)) { // This is not how you run this method
 
                 //}
