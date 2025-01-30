@@ -5,9 +5,11 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.nonRR.States;
 import org.firstinspires.ftc.teamcode.robothardware.Lift;
 
@@ -17,7 +19,7 @@ import java.util.List;
 
 public abstract class SkeletonWithArmActions extends LinearOpMode {
     Lift lift;
-    private double extensionPower= 0.25;
+    private double extensionPower= 1;
     private double anglePower = 0.25;
     private double extensionHoldPower = 0.4;
     private double angleHoldPower = 0.4;
@@ -25,9 +27,20 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
     private int extensionTolerance = 10;
     private int angleTolerance = 10;
 
+    // Store current motor value targets
+    private int currentExtensionPosition = 0;
+    private int currentAnglePosition = 0;
+
     public class LiftWithActions {
         public LiftWithActions(){
             lift = new Lift(hardwareMap);
+        }
+
+        public void liftTelemetry(Telemetry t) {
+            t.addData("motorExtension1", lift.motorExtension1.getCurrentPosition());
+            t.addData("motorExtension2", lift.motorExtension2.getCurrentPosition());
+            t.addData("motorAngle1", lift.motorAngle1.getCurrentPosition());
+            t.addData("motorAngle2", lift.motorAngle2.getCurrentPosition());
         }
 
         public class setExtensionPosition implements Action {
@@ -174,13 +187,15 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
 
 
                 if (!initialized) {
-                    additivePosition1 = lift.motorAngle1.getCurrentPosition() + 30;
-                    additivePosition2 = lift.motorAngle2.getCurrentPosition() + 30;
+
+                    currentAnglePosition += 5;
+                    //additivePosition1 = lift.motorAngle1.getCurrentPosition() + 30;
+                    //additivePosition2 = lift.motorAngle2.getCurrentPosition() + 30;
                     initialized = true;
                 }
 
-                lift.motorAngle1.setTargetPosition(additivePosition1);
-                lift.motorAngle2.setTargetPosition(additivePosition2);
+                lift.motorAngle1.setTargetPosition(currentAnglePosition);
+                lift.motorAngle2.setTargetPosition(currentAnglePosition);
 
                 lift.motorAngle1.setTargetPositionTolerance(angleTolerance);
                 lift.motorAngle2.setTargetPositionTolerance(angleTolerance);
@@ -224,8 +239,8 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
 
                     lift.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     lift.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    lift.motorExtension1.setPower(0.25);
-                    lift.motorExtension2.setPower(0.25);
+                    lift.motorExtension1.setPower(extensionPower);
+                    lift.motorExtension2.setPower(extensionPower);
 
 
                     return false;
@@ -257,8 +272,8 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
 
                 lift.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 lift.motorExtension2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                lift.motorExtension1.setPower(0.25);
-                lift.motorExtension2.setPower(0.25);
+                lift.motorExtension1.setPower(extensionPower);
+                lift.motorExtension2.setPower(extensionPower);
 
 
                 return false;
@@ -291,8 +306,8 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
 
                 lift.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 lift.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                lift.motorAngle1.setPower(0.25);
-                lift.motorAngle2.setPower(0.25);
+                lift.motorAngle1.setPower(anglePower);
+                lift.motorAngle2.setPower(anglePower);
 
 
                 return false;
@@ -302,6 +317,24 @@ public abstract class SkeletonWithArmActions extends LinearOpMode {
             return new manualDown();
         }
 
+        // Moving all the claw stuff here because having a seperate class is gay as fuck
+        public class setSwingPosition implements Action {
+
+        }
+
+        public Action Drop() {
+            return new SequentialAction(
+                    setExtensionPosition(0),
+                    setAnglePosition(States.DROP.motorAnglePosition),
+                    setExtensionPosition(States.DROP.motorExtensionPosition)
+            );
+        }
+
+        public Action Pickup() {
+            return new SequentialAction(
+
+            );
+        }
 
 
     }

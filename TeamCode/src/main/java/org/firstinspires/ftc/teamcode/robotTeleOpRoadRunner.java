@@ -115,28 +115,29 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
             telemetry.addData("x", pose.position.x);
             telemetry.addData("y", pose.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+            lift.liftTelemetry(telemetry);
             telemetry.update();
 
             // Some issues in this line. Forgetting to reference position properly.
             //drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.position.x + gamepad1.left_stick_x, pose.position.y - gamepad1.left_stick_y), pose.heading.toDouble()-gamepad1.right_stick_x));
-            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(gamepad1.left_stick_x, gamepad1.left_stick_y), -gamepad1.right_stick_x));
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x), -gamepad1.right_stick_x));
 
 
             Action manualUpButtonAction = new ParallelAction(
-                lift.manualUp(),
-                lift.retainExtensionPosition()
+                    lift.manualUp(),
+                    lift.retainExtensionPosition()
             );
             Action manualDownButtonAction = new ParallelAction(
-                lift.manualDown(),
-                lift.retainExtensionPosition()
+                    lift.manualDown(),
+                    lift.retainExtensionPosition()
             );
             Action manualExtendButtonAction = new ParallelAction(
-                lift.manualExtend(),
-                lift.retainAnglePosition()
+                    lift.manualExtend(),
+                    lift.retainAnglePosition()
             );
             Action manualRetractButtonAction = new ParallelAction(
-                lift.manualRetract(),
-                lift.retainAnglePosition()
+                    lift.manualRetract(),
+                    lift.retainAnglePosition()
             );
 
             //drive.setDrivePowers(new Pose2d(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x));
@@ -152,12 +153,14 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
             }
             if (gamepad1.dpad_left) {
                 runningActions.add(manualRetractButtonAction);
+            } if (gamepad1.square) {
+                runningActions.add(lift.Drop());
             }
 
             List<Action> newActions = new ArrayList<>();
             for (Action action : runningActions) {
                 newActions.add(action);
-                telemetry.addData(action.toString(), action);
+                //telemetry.addData(action.toString(), action);
                 //if (!action.run(packet)) { // This is not how you run this method
 
                 //}
@@ -166,7 +169,7 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
             // Run all actions sequentially
             Actions.runBlocking(
                     new SequentialAction(
-                        newActions
+                            newActions
                     )
             );
 
@@ -180,4 +183,3 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
         }
     }
 }
-
