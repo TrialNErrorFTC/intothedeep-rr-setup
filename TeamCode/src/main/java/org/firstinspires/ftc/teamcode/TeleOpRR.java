@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.DashboardCore;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -8,16 +7,9 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
-import com.acmerobotics.roadrunner.ftc.MecanumMotorDirectionDebugger;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.nonRR.States;
-import org.firstinspires.ftc.teamcode.robothardware.Lift;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +17,7 @@ import java.util.List;
 
 
 @TeleOp
-public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
+public class TeleOpRR extends TeleOpActionsRR {
     private List<Action> runningActions = new ArrayList<>();
     FtcDashboard dash = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
@@ -99,12 +91,26 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
 //
 //        }
 
+
+
     @Override
     public void runOpMode() throws InterruptedException {
         Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
-        LiftWithActions lift = new LiftWithActions();
+        ActionControl actionControl = new ActionControl();
         Pose2d pose;
+
+        // init claw Zero extension, then angle
+        Actions.runBlocking(
+                new SequentialAction(
+                        new ParallelAction(
+                                actionControl.clawClose(),
+                                actionControl.setSwingPosition(0.0)
+                        ),
+                        actionControl.zeroExtension(),
+                        actionControl.zeroAngle()
+                )
+        );
 
         waitForStart();
 
@@ -115,55 +121,62 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
             telemetry.addData("x", pose.position.x);
             telemetry.addData("y", pose.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
-            lift.liftTelemetry(telemetry);
+            actionControl.liftTelemetry(telemetry);
             telemetry.update();
 
             // Some issues in this line. Forgetting to reference position properly.
             //drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.position.x + gamepad1.left_stick_x, pose.position.y - gamepad1.left_stick_y), pose.heading.toDouble()-gamepad1.right_stick_x));
             drive.setDrivePowers(new PoseVelocity2d(new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x), -gamepad1.right_stick_x));
 
-
-            Action manualUpButtonAction = new ParallelAction(
-                    lift.manualUp(),
-                    lift.retainExtensionPosition()
-            );
-            Action manualDownButtonAction = new ParallelAction(
-                    lift.manualDown(),
-                    lift.retainExtensionPosition()
-            );
-            Action manualExtendButtonAction = new ParallelAction(
-                    lift.manualExtend(),
-                    lift.retainAnglePosition()
-            );
-            Action manualRetractButtonAction = new ParallelAction(
-                    lift.manualRetract(),
-                    lift.retainAnglePosition()
-            );
-
             //drive.setDrivePowers(new Pose2d(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x));
             drive.updatePoseEstimate();
-            if (gamepad1.dpad_up) {
-                runningActions.add(manualUpButtonAction);
+
+            // Main Controller
+            if (gamepad1.square) {
+                runningActions.add(actionControl.pickup());
+            } if (gamepad1.triangle) {
+                runningActions.add(actionControl.wallPickup());
+            } if (gamepad1.cross) {
+                runningActions.add(actionControl.prepareClip());
+            } if (gamepad1.circle) {
+                runningActions.add(actionControl.clipClip());
+            } if (gamepad1.left_bumper) {
+                runningActions.add(actionControl.clawOpen());
+            } if (gamepad1.right_bumper) {
+                runningActions.add(actionControl.clawClose());
+            } if (gamepad1.dpad_down) {
+                runningActions.add(actionControl.pickupSample());
+            } if (gamepad1.dpad_up) {
+                // TODO : Add a function for killing all actions
             }
-            if (gamepad1.dpad_down) {
-                runningActions.add(manualDownButtonAction);
+
+            // Secondary Controls
+            if (gamepad2.dpad_up) {
+                runningActions.add(actionControl.manualUp());
             }
-            if (gamepad1.dpad_right) {
-                runningActions.add(manualExtendButtonAction);
+            if (gamepad2.dpad_down) {
+                runningActions.add(actionControl.manualDown());
             }
-            if (gamepad1.dpad_left) {
-                runningActions.add(manualRetractButtonAction);
-            } if (gamepad1.square) {
-                runningActions.add(lift.Drop());
+            if (gamepad2.dpad_right) {
+                runningActions.add(actionControl.manualExtend());
+            }
+            if (gamepad2.dpad_left) {
+                runningActions.add(actionControl.manualRetract());
+            }
+            if (gamepad2.triangle) {
+                runningActions.add(actionControl.manualClawAngle(-0.01));
+            }
+            if (gamepad2.square) {
+                runningActions.add(actionControl.manualClawAngle(0.01));
+
             }
 
             List<Action> newActions = new ArrayList<>();
             for (Action action : runningActions) {
-                newActions.add(action);
-                //telemetry.addData(action.toString(), action);
-                //if (!action.run(packet)) { // This is not how you run this method
-
-                //}
+                newActions.add(new ParallelAction(
+                        action,
+                        actionControl.retainAnglePosition()
+                ));
             }
 
             // Run all actions sequentially
@@ -172,7 +185,6 @@ public class robotTeleOpRoadRunner extends SkeletonWithArmActions {
                             newActions
                     )
             );
-
 
             runningActions = newActions;
 

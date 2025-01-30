@@ -9,11 +9,11 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 @Config
-public class Lift {
+public class ControlRR {
     public DcMotorEx motorAngle1;
     public DcMotorEx motorAngle2;
     public DcMotorEx motorExtension1;
@@ -24,9 +24,16 @@ public class Lift {
     private OverflowEncoder motorExtension1Encoder;
     private OverflowEncoder motorExtension2Encoder;
 
+    public Servo claw;
+    public Servo swing;
+    public Servo angle;
+
+    public TouchSensor limitSwitchAngle;
+    public TouchSensor limitSwitchExtension;
 
 
-    public Lift(@NonNull HardwareMap hardwareMap) {
+
+    public ControlRR(@NonNull HardwareMap hardwareMap) {
         motorAngle1 = hardwareMap.get(DcMotorEx.class, "motorAngle1");
 
 
@@ -69,6 +76,14 @@ public class Lift {
         motorExtension2Encoder = new OverflowEncoder(new RawEncoder(motorExtension2));
         motorExtension2Encoder.setDirection(DcMotorSimple.Direction.FORWARD);
 
+        // Servos
+        claw = hardwareMap.servo.get("claw");
+        swing = hardwareMap.servo.get("swing");
+        angle = hardwareMap.servo.get("angle");
+
+        // Limit switches
+        limitSwitchAngle = hardwareMap.touchSensor.get("limitAngle");
+        limitSwitchExtension = hardwareMap.touchSensor.get("limitExtension");
 
 
     }

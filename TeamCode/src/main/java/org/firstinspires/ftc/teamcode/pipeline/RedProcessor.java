@@ -173,5 +173,5 @@ public class RedProcessor implements VisionProcessor {
 
         return largestContour;
     }
-    }
+}
 
