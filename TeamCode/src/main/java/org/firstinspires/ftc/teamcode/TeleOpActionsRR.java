@@ -343,7 +343,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
                 controlRR.swing.setPosition(position);
 
-                return false;
+                return !(controlRR.swing.getPosition() == position);
             }
 
             public SetSwingPosition(double pos) {
@@ -368,7 +368,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
                 controlRR.angle.setPosition(position);
 
-                return false;
+                return !(controlRR.angle.getPosition() == position);
             }
 
             public SetServoAnglePosition(double pos) {
@@ -518,14 +518,13 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                 }
 
                 if (targetPosition > 1) {
-                    controlRR.angle.setPosition(1);
+                    targetPosition = 1;
                 } else if (targetPosition < 0) {
-                    controlRR.angle.setPosition(0);
-                } else {
-                    controlRR.angle.setPosition(targetPosition);
+                    targetPosition = 0;
                 }
+                controlRR.angle.setPosition(targetPosition);
 
-                return false;
+                return !(controlRR.angle.getPosition() == targetPosition);
             }
 
             public ManualClawAngle(double step) {
@@ -543,8 +542,6 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                     setExtensionPosition(States.DROP.motorExtensionPosition)
             );
         }
-
-
 
         public class DriveControl implements Action{
             boolean initialized = false;
