@@ -57,24 +57,24 @@ public class ControlRR {
         motorExtension1 = hardwareMap.get(DcMotorEx.class, "motorExtension1");
 
 
-        motorExtension1.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorExtension1.setDirection(DcMotorSimple.Direction.FORWARD);
 //        motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorExtension1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorExtension1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorExtension1Encoder = new OverflowEncoder(new RawEncoder(motorExtension1));
-        motorExtension1Encoder.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorExtension1Encoder.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
 
         motorExtension2 = hardwareMap.get(DcMotorEx.class, "motorExtension2");
 
 
-        motorExtension2.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorExtension2.setDirection(DcMotorSimple.Direction.REVERSE);
 //        motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorExtension2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorExtension2Encoder = new OverflowEncoder(new RawEncoder(motorExtension2));
-        motorExtension2Encoder.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorExtension2Encoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Servos
         claw = hardwareMap.servo.get("claw");

@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.net.wifi.p2p.WifiP2pManager;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,7 +22,7 @@ import org.firstinspires.ftc.teamcode.robothardware.ControlRR;
 public abstract class TeleOpActionsRR extends LinearOpMode {
     ControlRR controlRR;
     private double extensionPower= 0.6;
-    private double anglePower = 0.5;
+    private double anglePower = 0.4;
     private double extensionHoldPower = 0.4;
     private double angleHoldPower = 0.4;
 
@@ -50,8 +54,12 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             }
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+                currentExtensionPosition = extensionPosition;
 
-                    //set position of lift
+                controlRR.motorAngle1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                controlRR.motorAngle2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+                //set position of lift
                     controlRR.motorExtension1.setTargetPosition(extensionPosition);
                     controlRR.motorExtension2.setTargetPosition(extensionPosition);
 
@@ -86,6 +94,8 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+                currentAnglePosition = anglePosition;
+
                 //set position of lift
                 controlRR.motorAngle1.setTargetPosition(anglePosition);
                 controlRR.motorAngle2.setTargetPosition(anglePosition);
@@ -120,14 +130,14 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized){
-                    currentPosition1 = controlRR.motorExtension1.getCurrentPosition();
-                    currentPosition2 = controlRR.motorExtension2.getCurrentPosition();
+                    //currentPosition1 = controlRR.motorExtension1.getCurrentPosition();
+                    //currentPosition2 = controlRR.motorExtension2.getCurrentPosition();
                     initialized = true;
                 }
 
                 // keep the motor in a position that is in the tolerance range, and ends when going to the next action
-                controlRR.motorExtension1.setTargetPosition(currentPosition1);
-                controlRR.motorExtension2.setTargetPosition(currentPosition2);
+                controlRR.motorExtension1.setTargetPosition(currentExtensionPosition);
+                controlRR.motorExtension2.setTargetPosition(currentExtensionPosition);
                 controlRR.motorExtension1.setTargetPositionTolerance(extensionTolerance);
                 controlRR.motorExtension2.setTargetPositionTolerance(extensionTolerance);
                 controlRR.motorExtension1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -152,8 +162,8 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 // keep the motor in a position that is in the tolerance range, and ends when going to the next action
-                controlRR.motorAngle1.setTargetPosition(controlRR.motorAngle1.getCurrentPosition());
-                controlRR.motorAngle2.setTargetPosition(controlRR.motorAngle2.getCurrentPosition());
+                controlRR.motorAngle1.setTargetPosition(currentAnglePosition);
+                controlRR.motorAngle2.setTargetPosition(currentAnglePosition);
 
                 controlRR.motorAngle1.setTargetPositionTolerance(angleTolerance);
                 controlRR.motorAngle2.setTargetPositionTolerance(angleTolerance);
@@ -224,13 +234,14 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
 
                     if (!initialized){
-                        additivePosition1 = controlRR.motorExtension1.getCurrentPosition() - 30;
-                        additivePosition2 = controlRR.motorExtension2.getCurrentPosition() - 30;
+                        currentExtensionPosition -= 30;
+                        //additivePosition1 = controlRR.motorExtension1.getCurrentPosition() - 30;
+                        //additivePosition2 = controlRR.motorExtension2.getCurrentPosition() - 30;
                         initialized = true;
                     }
 
-                    controlRR.motorExtension1.setTargetPosition(additivePosition1);
-                    controlRR.motorExtension2.setTargetPosition(additivePosition2);
+                    controlRR.motorExtension1.setTargetPosition(currentExtensionPosition);
+                    controlRR.motorExtension2.setTargetPosition(currentExtensionPosition);
 
                     controlRR.motorExtension1.setTargetPositionTolerance(10);
                     controlRR.motorExtension2.setTargetPositionTolerance(10);
@@ -257,13 +268,14 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
 
                 if (!initialized) {
-                    additivePosition1 = controlRR.motorExtension1.getCurrentPosition() + 30;
-                    additivePosition2 = controlRR.motorExtension2.getCurrentPosition() + 30;
+                    currentExtensionPosition += 30;
+                    //additivePosition1 = controlRR.motorExtension1.getCurrentPosition() + 30;
+                    //additivePosition2 = controlRR.motorExtension2.getCurrentPosition() + 30;
                     initialized = true;
                 }
 
-                controlRR.motorExtension1.setTargetPosition(additivePosition1);
-                controlRR.motorExtension2.setTargetPosition(additivePosition2);
+                controlRR.motorExtension1.setTargetPosition(currentExtensionPosition);
+                controlRR.motorExtension2.setTargetPosition(currentExtensionPosition);
 
                 controlRR.motorExtension1.setTargetPositionTolerance(10);
                 controlRR.motorExtension2.setTargetPositionTolerance(10);
@@ -291,13 +303,14 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
 
                 if (!initialized){
-                    additivePosition1 = controlRR.motorAngle1.getCurrentPosition() - 30;
-                    additivePosition2 = controlRR.motorAngle2.getCurrentPosition() - 30;
+                    currentAnglePosition -= 30;
+                    //additivePosition1 = controlRR.motorAngle1.getCurrentPosition() - 30;
+                    //additivePosition2 = controlRR.motorAngle2.getCurrentPosition() - 30;
                     initialized = true;
                 }
 
-                controlRR.motorAngle1.setTargetPosition(additivePosition1);
-                controlRR.motorAngle2.setTargetPosition(additivePosition2);
+                controlRR.motorAngle1.setTargetPosition(currentAnglePosition);
+                controlRR.motorAngle2.setTargetPosition(currentAnglePosition);
 
                 controlRR.motorAngle1.setTargetPositionTolerance(10);
                 controlRR.motorAngle2.setTargetPositionTolerance(10);
@@ -439,9 +452,21 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                     initialized = true;
                 }
 
+
+                controlRR.motorAngle1.setTargetPosition(currentAnglePosition);
+                controlRR.motorAngle2.setTargetPosition(currentAnglePosition);
+                controlRR.motorAngle1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                controlRR.motorAngle2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                controlRR.motorAngle1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                controlRR.motorAngle2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
                 while (!controlRR.limitSwitchExtension.isPressed()) {
                     Actions.runBlocking(manualRetract());
                 }
+
+                currentExtensionPosition = 50;
                 controlRR.motorExtension1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 controlRR.motorExtension2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -465,6 +490,8 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                 while (!controlRR.limitSwitchAngle.isPressed()) {
                     Actions.runBlocking(manualDown());
                 }
+
+                currentAnglePosition = 10;
                 controlRR.motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 controlRR.motorAngle2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -517,10 +544,37 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             );
         }
 
+
+
+        public class DriveControl implements Action{
+            boolean initialized = false;
+            private MecanumDrive drive;
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (!initialized) {
+                    initialized = true;
+                }
+
+                //drive.setDrivePowers(new PoseVelocity2d(new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x), -gamepad1.right_stick_x));
+
+                return false;
+            }
+
+            public DriveControl(MecanumDrive d) {
+                this.drive = d;
+            }
+        }
+        public Action driveControl(MecanumDrive drive){
+            return new DriveControl(drive);
+        }
+
+
         public Action wallPickup() {
             return new SequentialAction(
+                    setServoAnglePosition(States.WALLPICKUP.anglePosition),
                     setSwingPosition(0),
-                    setExtensionPosition(0),
+                    setExtensionPosition(100),
                     setAnglePosition(States.WALLPICKUP.motorAnglePosition),
                     new ParallelAction(
                             setExtensionPosition(States.WALLPICKUP.motorExtensionPosition),
@@ -533,10 +587,11 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             return new SequentialAction(
                     new ParallelAction(
                             setSwingPosition(0),
-                            setExtensionPosition(0)
+                            setExtensionPosition(100)
                     ),
                     setAnglePosition(States.PICKUP.motorAnglePosition),
                     setExtensionPosition(States.PICKUP.motorExtensionPosition),
+                    setAnglePosition(States.PICKUP.motorAnglePosition),
                     setSwingPosition(States.PICKUP.swingPosition)
             );
         }
@@ -545,7 +600,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             return new SequentialAction(
                     new ParallelAction(
                         setSwingPosition(States.PREPARECLIP.swingPosition),
-                        setExtensionPosition(0)
+                        setExtensionPosition(100)
                     ),
                     new ParallelAction(
                             setAnglePosition(States.PREPARECLIP.motorAnglePosition),
@@ -556,15 +611,14 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
         public Action clipClip() {
             return new SequentialAction(
-                    new ParallelAction(
-                            setSwingPosition(States.CLIPCLIP.swingPosition),
-                            setAnglePosition(States.CLIPCLIP.motorAnglePosition),
-                            setExtensionPosition(States.CLIPCLIP.motorExtensionPosition)
-                    ),
+                    setAnglePosition(States.CLIPCLIP.motorAnglePosition),
+                    setExtensionPosition(States.CLIPCLIP.motorExtensionPosition),
                     new ParallelAction(
                             setAnglePosition(States.CLIPCLIP.motorAnglePosition-75),
-                            clawOpen()
+                            clawOpen(),
+                            setServoAnglePosition(0.5)
                             ),
+                    setExtensionPosition(States.PREPARECLIP.motorExtensionPosition),
                     rest()
             );
         }
@@ -572,7 +626,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
         public Action rest() {
             return new SequentialAction(
               new ParallelAction(
-                      setSwingPosition(0),
+                      setSwingPosition(100),
                       setExtensionPosition(50)
               ),
                     setAnglePosition(50),
@@ -582,11 +636,11 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
         public Action pickupSample() {
             return new SequentialAction(
-                    openCVPickup(), // TODO : Change this if needed for OpenCV
-                    setAnglePosition(States.PICKUP.motorAnglePosition-30),
+                    //openCVPickup(), // TODO : Change this if needed for OpenCV
+                    setAnglePosition(States.PICKUP.motorAnglePosition-40),
                     clawClose(),
-                    setAnglePosition(States.PICKUP.motorAnglePosition),
-                    rest()
+                    setAnglePosition(States.PICKUP.motorAnglePosition)
+                    //rest()
             );
         }
 

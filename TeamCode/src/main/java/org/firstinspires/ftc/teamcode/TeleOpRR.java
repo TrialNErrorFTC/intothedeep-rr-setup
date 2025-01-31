@@ -91,8 +91,6 @@ public class TeleOpRR extends TeleOpActionsRR {
 //
 //        }
 
-
-
     @Override
     public void runOpMode() throws InterruptedException {
         Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(90));
@@ -100,7 +98,7 @@ public class TeleOpRR extends TeleOpActionsRR {
         ActionControl actionControl = new ActionControl();
         Pose2d pose;
 
-        // init claw Zero extension, then angle
+        // Init claw Zero extension, then angle
         Actions.runBlocking(
                 new SequentialAction(
                         new ParallelAction(
@@ -108,7 +106,8 @@ public class TeleOpRR extends TeleOpActionsRR {
                                 actionControl.setSwingPosition(0.0)
                         ),
                         actionControl.zeroExtension(),
-                        actionControl.zeroAngle()
+                        actionControl.zeroAngle(),
+                        actionControl.zeroExtension()
                 )
         );
 
@@ -124,33 +123,40 @@ public class TeleOpRR extends TeleOpActionsRR {
             actionControl.liftTelemetry(telemetry);
             telemetry.update();
 
-            // Some issues in this line. Forgetting to reference position properly.
-            //drive.setDrivePowers(new PoseVelocity2d(new Vector2d(pose.position.x + gamepad1.left_stick_x, pose.position.y - gamepad1.left_stick_y), pose.heading.toDouble()-gamepad1.right_stick_x));
-            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x), -gamepad1.right_stick_x));
+            // Set drive powers from gamepad input
+            PoseVelocity2d driveControl = new PoseVelocity2d(
+                    new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x),
+                    -gamepad1.right_stick_x
+            );
+            drive.setDrivePowers(driveControl);
 
-            //drive.setDrivePowers(new Pose2d(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x));
-            drive.updatePoseEstimate();
-
-            // Main Controller
+            // Main Controller actions
             if (gamepad1.square) {
                 runningActions.add(actionControl.pickup());
-            } if (gamepad1.triangle) {
+            }
+            if (gamepad1.triangle) {
                 runningActions.add(actionControl.wallPickup());
-            } if (gamepad1.cross) {
+            }
+            if (gamepad1.cross) {
                 runningActions.add(actionControl.prepareClip());
-            } if (gamepad1.circle) {
+            }
+            if (gamepad1.circle) {
                 runningActions.add(actionControl.clipClip());
-            } if (gamepad1.left_bumper) {
+            }
+            if (gamepad1.left_bumper) {
                 runningActions.add(actionControl.clawOpen());
-            } if (gamepad1.right_bumper) {
+            }
+            if (gamepad1.right_bumper) {
                 runningActions.add(actionControl.clawClose());
-            } if (gamepad1.dpad_down) {
+            }
+            if (gamepad1.dpad_down) {
                 runningActions.add(actionControl.pickupSample());
-            } if (gamepad1.dpad_up) {
+            }
+            if (gamepad1.dpad_up) {
                 // TODO : Add a function for killing all actions
             }
 
-            // Secondary Controls
+            // Secondary Controller actions
             if (gamepad2.dpad_up) {
                 runningActions.add(actionControl.manualUp());
             }
@@ -168,26 +174,40 @@ public class TeleOpRR extends TeleOpActionsRR {
             }
             if (gamepad2.square) {
                 runningActions.add(actionControl.manualClawAngle(0.01));
-
             }
 
+            // Prepare the list of actions, including the drive control
             List<Action> newActions = new ArrayList<>();
             for (Action action : runningActions) {
+//                driveControl = new PoseVelocity2d(
+//                        new Vector2d(0, 0),
+//                        0
+//                );
+//                drive.setDrivePowers(driveControl);
                 newActions.add(new ParallelAction(
-                        action,
-                        actionControl.retainAnglePosition()
+                        action
+                        //actionControl.driveControl(drive)  // Ensure drive control runs parallel to other actions
                 ));
             }
 
-            // Run all actions sequentially
+            // This is where the fix is: we only run actions in parallel with the drive controls without blocking them
             Actions.runBlocking(
-                    new SequentialAction(
-                            newActions
+                    new ParallelAction(
+                            newActions.toArray(new Action[0])  // Execute everything in parallel
+                    )
+            );
+
+            // Ensure actions to retain positions are always running
+            Actions.runBlocking(
+                    new ParallelAction(
+                            actionControl.retainAnglePosition(),
+                            actionControl.retainExtensionPosition()
                     )
             );
 
             runningActions = newActions;
 
+            // Send telemetry packet to dashboard
             TelemetryPacket packet = new TelemetryPacket();
             packet.fieldOverlay().setStroke("#3F51B5");
             Drawing.drawRobot(packet.fieldOverlay(), pose);
