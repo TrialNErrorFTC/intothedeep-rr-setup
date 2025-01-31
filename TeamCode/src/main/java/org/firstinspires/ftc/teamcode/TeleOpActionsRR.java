@@ -549,6 +549,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
         public class DriveControl implements Action{
             boolean initialized = false;
             private MecanumDrive drive;
+            private Action action;
 
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -556,17 +557,24 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                     initialized = true;
                 }
 
-                //drive.setDrivePowers(new PoseVelocity2d(new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x), -gamepad1.right_stick_x));
-
-                return false;
+                if (action.run(telemetryPacket)) {
+                    return false;
+                }
+                else {
+                    drive.setDrivePowers(new PoseVelocity2d(
+                            new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x),
+                            -gamepad1.right_stick_x));
+                    return true;
+                }
             }
 
-            public DriveControl(MecanumDrive d) {
+            public DriveControl(MecanumDrive d, Action action) {
                 this.drive = d;
+                this.action = action;
             }
         }
-        public Action driveControl(MecanumDrive drive){
-            return new DriveControl(drive);
+        public Action driveControl(MecanumDrive drive, Action action){
+            return new DriveControl(drive, action);
         }
 
 
@@ -637,10 +645,30 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
         public Action pickupSample() {
             return new SequentialAction(
                     //openCVPickup(), // TODO : Change this if needed for OpenCV
-                    setAnglePosition(States.PICKUP.motorAnglePosition-40),
+                    setAnglePosition(States.PICKUP.motorAnglePosition-150),
                     clawClose(),
                     setAnglePosition(States.PICKUP.motorAnglePosition)
                     //rest()
+            );
+        }
+
+        public Action hangPrepare() {
+            return new SequentialAction(
+                    new ParallelAction(
+                            setExtensionPosition(50),
+                            setSwingPosition(States.HANGPREPARE.swingPosition)
+                    ),
+                    setAnglePosition(States.HANG.motorAnglePosition)
+            );
+        }
+
+        public Action hang() {
+            return new SequentialAction(
+                    setExtensionPosition(States.HANG.motorExtensionPosition+(States.HANG.motorExtensionPosition/2)),
+                    new ParallelAction(
+                            setAnglePosition(States.HANG.motorAnglePosition),
+                            setExtensionPosition(States.HANG.motorExtensionPosition)
+                    )
             );
         }
 
