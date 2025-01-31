@@ -173,6 +173,10 @@ public class TeleOpRR extends TeleOpActionsRR {
             }
             if (gamepad2.square) {
                 runningActions.add(actionControl.manualClawAngle(0.01));
+            } if (gamepad2.cross) {
+                runningActions.add(actionControl.hangPrepare());
+            } if (gamepad2.circle) {
+                runningActions.add(actionControl.hang());
             }
 
             // Prepare the list of actions, including the drive control
@@ -184,7 +188,7 @@ public class TeleOpRR extends TeleOpActionsRR {
 //                );
 //                drive.setDrivePowers(driveControl);
                 newActions.add(new ParallelAction(
-                        action
+                        actionControl.driveControl(drive, action)
                         //actionControl.driveControl(drive)  // Ensure drive control runs parallel to other actions
                 ));
             }

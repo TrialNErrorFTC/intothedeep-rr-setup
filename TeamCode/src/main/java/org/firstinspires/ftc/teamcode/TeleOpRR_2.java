@@ -106,7 +106,12 @@ public class TeleOpRR_2 extends TeleOpActionsRR {
             }
             if (gamepad2.square) {
                 runningActions.add(actionControl.manualClawAngle(0.01));
+            } if (gamepad2.cross) {
+                runningActions.add(actionControl.hangPrepare());
+            } if (gamepad2.circle) {
+                runningActions.add(actionControl.hang());
             }
+
 
             // Ensure actions to retain positions are always running
             runningActions.add(new ParallelAction(
