@@ -8,7 +8,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
@@ -30,6 +33,7 @@ public class ControlRR {
 
     public TouchSensor limitSwitchAngle;
     public TouchSensor limitSwitchExtension;
+    public DigitalChannel light;
 
 
 
@@ -85,6 +89,6 @@ public class ControlRR {
         limitSwitchAngle = hardwareMap.touchSensor.get("limitAngle");
         limitSwitchExtension = hardwareMap.touchSensor.get("limitExtension");
 
-
+        light = hardwareMap.digitalChannel.get("light");
     }
 }

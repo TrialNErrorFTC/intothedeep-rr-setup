@@ -21,19 +21,19 @@ import java.util.Set;
 
 @TeleOp
 public class TeleOpRR extends TeleOpActionsRR {
-    private List<Action> runningActions = new ArrayList<>();
+    private List<ActionControl.Result> runningActions = new ArrayList<>();
     FtcDashboard dash = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
 
-    public void addAction(Action action) {
+    public void addAction(ActionControl.Result result) {
         boolean exists = false;
-        for (Action acc : runningActions) {
-            if (action.equals(acc)) {
+        for (ActionControl.Result acc : runningActions) {
+            if (acc.getName().equals(result.getName())) {
                 exists = true;
             }
         }
         if (!exists) {
-            runningActions.add(action);
+            runningActions.add(result);
         }
     }
 
@@ -48,14 +48,15 @@ public class TeleOpRR extends TeleOpActionsRR {
         Actions.runBlocking(
                 new SequentialAction(
                         new ParallelAction(
-                                actionControl.setServoAnglePosition(0.0),
-                                actionControl.clawClose(),
-                                actionControl.setSwingPosition(0.0)
+                                actionControl.setServoAnglePosition(0.0).getAction(),
+                                actionControl.clawClose().getAction(),
+                                actionControl.setSwingPosition(0.0).getAction(),
+                                actionControl.lightOff().getAction()
                         ),
-                        actionControl.retainAnglePosition(),
-                        actionControl.zeroExtension(),
-                        actionControl.zeroAngle(),
-                        actionControl.zeroExtension()
+                        actionControl.retainAnglePosition().getAction(),
+                        actionControl.zeroExtension().getAction(),
+                        actionControl.zeroAngle().getAction(),
+                        actionControl.zeroExtension().getAction()
                 )
         );
 
@@ -69,7 +70,7 @@ public class TeleOpRR extends TeleOpActionsRR {
             telemetry.addData("y", pose.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
             actionControl.liftTelemetry(telemetry);
-            telemetry.update();
+
 
             // Set drive powers from gamepad input
             PoseVelocity2d driveControl = new PoseVelocity2d(
@@ -148,20 +149,24 @@ public class TeleOpRR extends TeleOpActionsRR {
             }
 
             // Filter duplicates
-            Set<Action> set = new HashSet<Action>(runningActions);
-            runningActions.clear();
-            runningActions.addAll(set);
+//            Set<Action> set = new HashSet<ActionControl.Result>(runningActions);
+//            runningActions.clear();
+//            runningActions.addAll(set);
+//            telemetry.addData("set actions", set.size());
+//            telemetry.addData("running actions", runningActions.size());
 
             // Ensure actions to retain positions are always running
-            runningActions.add(new ParallelAction(
-                    actionControl.retainAnglePosition(),
-                    actionControl.retainExtensionPosition()
-            ));
+            runningActions.add(actionControl.result (
+                    new ParallelAction(
+                        actionControl.retainAnglePosition().getAction(),
+                        actionControl.retainExtensionPosition().getAction()
+                    ),
+                    "hold"));
 
             // Prepare the list of actions, including the drive control
-            List<Action> newActions = new ArrayList<>();
-            for (Action action : runningActions) {
-                if (action.run(packet)) {
+            List<ActionControl.Result> newActions = new ArrayList<>();
+            for (ActionControl.Result action : runningActions) {
+                if (action.getAction().run(packet)) {
                     newActions.add(action);
                 }
 //                newActions.add(new ParallelAction(
@@ -171,6 +176,7 @@ public class TeleOpRR extends TeleOpActionsRR {
             }
             runningActions = newActions;
 
+            telemetry.update();
 //            // This is where the fix is: we only run actions in parallel with the drive controls without blocking them
 //            Actions.runBlocking(
 //                    new ParallelAction(
