@@ -44,7 +44,9 @@ public class ControlRR {
         motorAngle1.setDirection(DcMotorSimple.Direction.FORWARD);
 //        motorAngle1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorAngle1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorAngle1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorAngle1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        //motorAngle1Encoder = new OverflowEncoder(new RawEncoder(motorAngle1));
+        //motorAngle1Encoder.setDirection(DcMotorSimple.Direction.FORWARD);
 
         motorAngle1Encoder = new OverflowEncoder(new RawEncoder(motorAngle1));
 
@@ -56,7 +58,7 @@ public class ControlRR {
         motorAngle2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorAngle2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorAngle2Encoder = new OverflowEncoder(new RawEncoder(motorAngle2));
-
+        motorAngle2Encoder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         motorExtension1 = hardwareMap.get(DcMotorEx.class, "motorExtension1");
 
@@ -79,6 +81,8 @@ public class ControlRR {
         motorExtension2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorExtension2Encoder = new OverflowEncoder(new RawEncoder(motorExtension2));
         motorExtension2Encoder.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        motorAngle2.setMotorDisable();
 
         // Servos
         claw = hardwareMap.servo.get("claw");

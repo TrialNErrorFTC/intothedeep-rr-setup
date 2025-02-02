@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.pipeline;
 
-import static org.opencv.imgproc.Imgproc.getRotationMatrix2D;
-
 import android.graphics.Canvas;
 
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
@@ -20,158 +18,208 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.graphics.Paint;
-
 
 public class RedProcessor implements VisionProcessor {
-    // Create a new Paint object
-    Paint paint = new Paint();
-    double angle;
-    Point center;
-    Point[] vertices;
-    List<MatOfPoint> contours = new ArrayList<>();
-
-
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
         // Not useful in this case, but we do need to implement it either way
     }
 
-    private android.graphics.Rect makeGraphicsRect(Rect rect, float scaleBmpPxToCanvasPx) {
-        int left = Math.round(rect.x * scaleBmpPxToCanvasPx);
-        int top = Math.round(rect.y * scaleBmpPxToCanvasPx);
-        int right = left + Math.round(rect.width * scaleBmpPxToCanvasPx);
-        int bottom = top + Math.round(rect.height * scaleBmpPxToCanvasPx);
-
-        return new android.graphics.Rect(left, top, right, bottom);
+    public class Alignment {
+        public double deltaX;
+        public double deltaY;
+        public double angle;
+        public Alignment(double x, double y, double a) {
+            this.deltaX = x;
+            this.deltaY = y;
+            this.angle = a;
+        }
     }
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
         if (frame == null) return null;
 
-        // Create a copy of the frame
-        Mat hsvFrame = new Mat();
-        Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_RGB2HSV);
+        double BLOCK_HEIGHT = 100;
+        double BLOCK_WIDTH = 50;
+        String COLOR = "RED";
+        double INCHES_PER_PIXEL = 0.014625;
 
-        // Define the lower and upper bounds for the red color range
-        Scalar lowerRed1 = new Scalar(0, 100, 100);
-        Scalar upperRed1 = new Scalar(10, 255, 255);
-        Scalar lowerRed2 = new Scalar(160, 100, 100);
-        Scalar upperRed2 = new Scalar(180, 255, 255);
+        // Set a point at 1/3 from the bottom of the image and 1/2 from the left.
+        Point target_point = new Point(frame.cols() / 2.0, frame.rows() * 2 / 3.0);
 
-        // Create masks for the red color ranges
-        Mat mask1 = new Mat();
-        Mat mask2 = new Mat();
-        Core.inRange(hsvFrame, lowerRed1, upperRed1, mask1);
-        Core.inRange(hsvFrame, lowerRed2, upperRed2, mask2);
 
-        // Combine the masks
-        Mat combinedMask = new Mat();
-        Core.addWeighted(mask1, 1.0, mask2, 1.0, 0.0, combinedMask);
+        // Convert the frame to HSV
+        Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGB2HSV);
+        Mat output = new Mat();
 
-        // Fill in the holes
-        Imgproc.dilate(combinedMask, combinedMask, new Mat());
-        Imgproc.erode(combinedMask, combinedMask, new Mat());
+        int erode_int = 5;
+        int dilate_int = 9;
 
-        // Find the rectangles using edge detection
+        if (COLOR.equals("RED")) {
+            Scalar lower1 = new Scalar(0, 0, 30);
+            Scalar upper1 = new Scalar(10, 255, 255);
+            Scalar lower2 = new Scalar(170, 20, 100);
+            Scalar upper2 = new Scalar(179, 255, 255);
+
+            Mat mask1 = new Mat();
+            Mat mask2 = new Mat();
+            Core.inRange(frame, lower1, upper1, mask1);
+            Core.inRange(frame, lower2, upper2, mask2);
+
+            Mat mask = new Mat();
+            Core.add(mask1, mask2, mask);
+
+            frame.copyTo(output, mask);
+        } else if (COLOR.equals("BLUE")) {
+            Scalar lower = new Scalar(100, 50, 0);
+            Scalar upper = new Scalar(140, 255, 255);
+            erode_int = 9;
+            dilate_int = 13;
+            Mat mask = new Mat();
+            Core.inRange(frame, lower, upper, mask);
+
+            frame.copyTo(output, mask);
+        } else if (COLOR.equals("YELLOW")) {
+            Scalar lower = new Scalar(10, 90, 50);
+            Scalar upper = new Scalar(50, 255, 255);
+
+            Mat mask = new Mat();
+            Core.inRange(frame, lower, upper, mask);
+
+            frame.copyTo(output, mask);
+        }
+
+        // Ignore the bottom 1/3 of the image.
+//        Rect roi = new Rect(0, 0, frame.cols(), frame.rows() * 2 / 3);
+//        output = new Mat(output, roi);
+
+        Imgproc.erode(output, output, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new org.opencv.core.Size(erode_int, erode_int)));
+        Imgproc.dilate(output, output, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new org.opencv.core.Size(dilate_int, dilate_int)));
+
+        // Convert the output to grayscale
+        Imgproc.cvtColor(output, output, Imgproc.COLOR_BGR2GRAY);
+
+        // Find contours
+        List<MatOfPoint> contours = new ArrayList<>();
+        List<RotatedRect> rects = new ArrayList<>();
         Mat hierarchy = new Mat();
-        Imgproc.findContours(combinedMask, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(output, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        // Filter out the contours that are not rectangles
-        for (int i = 0; i < contours.size(); i++) {
-            MatOfPoint contour = contours.get(i);
-            if (contour == null) continue;
-            double perimeter = Imgproc.arcLength(new MatOfPoint2f(contour.toArray()), true);
+        Point imgCenter = new Point(frame.cols() / 2.0, frame.rows() / 2.0);
+        double minDist = Double.MAX_VALUE;
+        RotatedRect minRect = null;
+
+        // Find the closest rectangle to the center of the image.
+        for (MatOfPoint contour : contours) {
+            MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
             MatOfPoint2f approx = new MatOfPoint2f();
-            Imgproc.approxPolyDP(new MatOfPoint2f(contour.toArray()), approx, 0.02 * perimeter, true);
-            if (approx.toList().size() == 4) {
-                contours.set(i, new MatOfPoint(approx.toArray()));
-            } else {
-                contours.remove(i);
-                i--;
+            Imgproc.approxPolyDP(contour2f, approx, 0.02 * Imgproc.arcLength(contour2f, true), true);
+
+            // We only care about rectangles with 4 corners that are close to the expected size.
+            if (approx.toList().size() >= 4) {
+                RotatedRect rect = Imgproc.minAreaRect(approx);
+                // Check if the rectangle is bigger than the block size.
+                if (rect.size.height < BLOCK_HEIGHT || rect.size.width < BLOCK_WIDTH) {
+                    continue;
+                }
+                Point[] points = new Point[4];
+                rect.points(points);
+
+                double dist = 0;
+                for (Point p : points) {
+                    dist += Math.sqrt(Math.pow(p.x - target_point.x, 2) + Math.pow(p.y - target_point.y, 2));
+                }
+
+                if (dist < minDist) {
+                    minDist = dist;
+                    minRect = rect;
+                }
+
+                // rects.add(rect);
             }
         }
 
-        // Find the largest rectangle and draw a rotated bounding box
-        if (contours.size() > 0) {
-            MatOfPoint largestContour = findLargestContour(contours);
-            if (largestContour != null) {
-                MatOfPoint2f largestContour2f = new MatOfPoint2f(largestContour.toArray());
-                RotatedRect rotatedRect = Imgproc.minAreaRect(largestContour2f);
-                vertices = new Point[4];
-                rotatedRect.points(vertices);
+        // Test color detection.
+        // output.copyTo(frame);
 
-                for (int j = 0; j < 4; j++) {
-                    Imgproc.line(frame, vertices[j], vertices[(j + 1) % 4], new Scalar(255, 0, 0), 2);
-                }
+        // Covert back to RGB.
+        //Imgproc.cvtColor(frame, frame, Imgproc.COLOR_HSV2RGB);
 
-                // Draw the center point
-                center = rotatedRect.center;
-                Imgproc.circle(frame, center, 5, new Scalar(0, 255, 0), -1);
+        // Draw a rectangle around all the found rectangles.
+//        for (RotatedRect rect : rects) {
+//            Point[] points = new Point[4];
+//            rect.points(points);
+//
+//            for (int i = 0; i < 4; i++) {
+//                Imgproc.line(frame, points[i], points[(i + 1) % 4], new Scalar(0, 255, 0), 2);
+//            }
+//
+//            // Print the center and angle of the rectangle with 2 decimal places.
+//            Point center = rect.center;
+//            // Normalize the angle to be the angle from a vertical line.
+//            // Draw a vertical line from the center of the rectangle.
+//            Imgproc.line(frame, center, new Point(center.x, center.y - 50), new Scalar(0, 0, 255), 2);
+//            double angle = rect.angle;
+//            // If the width is greater than the height, the angle is off by 90 degrees.
+//            if (rect.size.width > rect.size.height) {
+//                angle += 90;
+//            }
+//            // Make sure the angle is between -180 and 180 normalized to be from a vertical line.
+//            if (angle > 90) {
+//                angle -= 180;
+//            } else if (angle < -90) {
+//                angle += 180;
+//            }
+//            Imgproc.line(frame, center, new Point(center.x + 50 * Math.cos(Math.toRadians(angle)), center.y + 50 * Math.sin(Math.toRadians(angle))), new Scalar(255, 0, 0), 2);
+//
+//            // Print the center and angle of the rectangle with 2 decimal places.
+//            String text = String.format("Center: (%.2f, %.2f), Angle: %.2f", center.x, center.y, angle);
+//            Imgproc.putText(frame, text, new Point(center.x, center.y + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+//            // Print the width and height of the rectangle.
+//            text = String.format("Width: %.2f, Height: %.2f", rect.size.width, rect.size.height);
+//            Imgproc.putText(frame, text, new Point(center.x, center.y + 40), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+//
+//            // Draw a line from the target point to the center of the closest rectangle.
+//            if (minRect != null) {
+//                Imgproc.line(frame, target_point, minRect.center, new Scalar(255, 100, 255), 2);
+//            }
+//            // Print the delta x and y from the target point to the center of the closest rectangle.
+//            if (minRect != null) {
+//                text = String.format("Delta X: %.2f, Delta Y: %.2f", target_point.x - minRect.center.x, target_point.y - minRect.center.y);
+//                Imgproc.putText(frame, text, new Point(center.x, center.y + 60), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+//            }
+//
+//        }
+        double delta_x = 0;
+        double delta_y = 0;
+        double angle = 0;
 
-                // Normalize the angle to [-270, 270)
-                angle = rotatedRect.angle;
-                if (rotatedRect.size.width < rotatedRect.size.height) {
-                    angle = 90 + angle;
-                }
-                Mat mapMatrix = getRotationMatrix2D(center, angle, 1.0);
-
-                // Display the angle
-                String angleText = String.format("Angle: %.2f", angle);
-                Imgproc.putText(frame, angleText, new Point(center.x + 10, center.y), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
-
-                // Display the center coordinates
-                String centerText = String.format("Center: (%.2f, %.2f)", center.x, center.y);
-                Imgproc.putText(frame, centerText, new Point(center.x + 10, center.y + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
-
-                // Display the corner coordinates
-                for (int j = 0; j < 4; j++) {
-                    String cornerText = String.format("Corner %d: (%.2f, %.2f)", j, vertices[j].x, vertices[j].y);
-                    Imgproc.putText(frame, cornerText, new Point(vertices[j].x, vertices[j].y - 10), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
-                }
+        if (minRect != null) {
+            delta_x = target_point.x - minRect.center.x;
+            delta_y = target_point.y - minRect.center.y;
+            angle = minRect.angle;
+            // If the width is greater than the height, the angle is off by 90 degrees.
+            if (minRect.size.width > minRect.size.height) {
+                angle += 90;
             }
+            // Make sure the angle is between -180 and 180 normalized to be from a vertical line.
+            if (angle > 90) {
+                angle -= 180;
+            } else if (angle < -90) {
+                angle += 180;
+            }
+
+            // Convert pixels to inches to move.
+            delta_x *= INCHES_PER_PIXEL;
+            delta_y *= INCHES_PER_PIXEL;
         }
 
-        // Release resources
-        hsvFrame.release();
-        mask1.release();
-        mask2.release();
-        combinedMask.release();
-        hierarchy.release();
-        contours = new ArrayList<>();
-
-        return frame;
+        return new Alignment(delta_x, delta_y, angle);
     }
+
     @Override
     public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight, float scaleBmpPxToCanvasPx, float scaleCanvasDensity, Object userContext) {
-        //get the contours from the processFrame method
-//        Mat frame = (Mat) userContext;
-//        for (int i = 0; i < contours.size(); i++) {
-//            MatOfPoint contour = contours.get(i);
-//            Rect rect = Imgproc.boundingRect(contour);
-//            android.graphics.Rect graphicsRect = makeGraphicsRect(rect, scaleBmpPxToCanvasPx);
-//            paint.setColor(Color.RED);
-//            paint.setStyle(Paint.Style.STROKE);
-//            paint.setStrokeWidth(5);
-//            canvas.drawRect(graphicsRect, paint);
-//        }
 
-
-    }
-    private MatOfPoint findLargestContour(List<MatOfPoint> contours) {
-        double maxArea = 0;
-        MatOfPoint largestContour = null;
-
-        for (MatOfPoint contour : contours) {
-            double area = Imgproc.contourArea(contour);
-            if (area > maxArea) {
-                maxArea = area;
-                largestContour = contour;
-            }
-        }
-
-        return largestContour;
     }
 }
-

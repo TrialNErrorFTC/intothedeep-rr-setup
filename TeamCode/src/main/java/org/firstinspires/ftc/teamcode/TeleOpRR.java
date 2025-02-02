@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Size;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -11,6 +13,9 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.pipeline.RedProcessor;
+import org.firstinspires.ftc.vision.VisionPortal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +29,10 @@ public class TeleOpRR extends TeleOpActionsRR {
     private List<ActionControl.Result> runningActions = new ArrayList<>();
     FtcDashboard dash = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
+    VisionPortal myVisionPortal;
+    RedProcessor redProcessor;
+
+
 
     public void addAction(ActionControl.Result result) {
         boolean exists = false;
@@ -49,7 +58,7 @@ public class TeleOpRR extends TeleOpActionsRR {
                 new SequentialAction(
                         new ParallelAction(
                                 actionControl.setServoAnglePosition(0.0).getAction(),
-                                actionControl.clawClose().getAction(),
+                                 actionControl.clawClose().getAction(),
                                 actionControl.setSwingPosition(0.0).getAction(),
                                 actionControl.lightOff().getAction()
                         ),
@@ -59,6 +68,8 @@ public class TeleOpRR extends TeleOpActionsRR {
                         actionControl.zeroExtension().getAction()
                 )
         );
+        myVisionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), redProcessor);
+
 
         waitForStart();
 
@@ -114,6 +125,9 @@ public class TeleOpRR extends TeleOpActionsRR {
             if (gamepad1.dpad_left) {
                 //runningActions.add(actionControl.drop());
                 addAction(actionControl.drop());
+            }
+            if (gamepad1.touchpad) {
+                addAction(actionControl.rest());
             }
 
             // Secondary Controller actions
