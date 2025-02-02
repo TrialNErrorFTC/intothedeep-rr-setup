@@ -111,7 +111,8 @@ public class RedSidePreload extends TeleOpActionsRR {
                         new SequentialAction(
                                 preloadClip,
 //                                humanPlayerClip,
-                                park
+                                park,
+                                drive.actionBuilder(initialPose).turnTo(Math.toRadians(270)).build()
                         ), new InstantAction(drive.localizer::update)
                 )
         );
