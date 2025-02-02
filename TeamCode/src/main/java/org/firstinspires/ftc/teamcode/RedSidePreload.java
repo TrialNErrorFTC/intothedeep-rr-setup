@@ -13,10 +13,11 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 
-@TeleOp
+@Autonomous
 public class RedSidePreload extends TeleOpActionsRR {
     FtcDashboard dash = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
@@ -24,7 +25,7 @@ public class RedSidePreload extends TeleOpActionsRR {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Pose2d initialPose = new Pose2d(8, -70 + 8, Math.toRadians(270));
+        Pose2d initialPose = new Pose2d(-22+8, 60, Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         ActionControl actionControl = new ActionControl();
         Pose2d pose;
@@ -35,12 +36,12 @@ public class RedSidePreload extends TeleOpActionsRR {
         //All TrajectoryActionsBuilders here
         //DONE: Set the drive positions to here
         TrajectoryActionBuilder moveToClipLocation = drive.actionBuilder(initialPose)
-                .strafeTo(new Vector2d(-5, 20 + 12));
-        TrajectoryActionBuilder moveToClipLocationAdjust = drive.actionBuilder(initialPose)
-                .strafeTo(new Vector2d(5, 20 + 12));
-        TrajectoryActionBuilder moveToWallArea = drive.actionBuilder(drive.localizer.getPose())
-                .strafeTo(new Vector2d(-52, 53));
-        TrajectoryActionBuilder moveToParkPosition = drive.actionBuilder(drive.localizer.getPose())
+                .strafeTo(new Vector2d(3, 32));
+//        TrajectoryActionBuilder moveToClipLocationAdjust = drive.actionBuilder(initialPose)
+//                .strafeTo(new Vector2d(0, 20 + 9));
+//        TrajectoryActionBuilder moveToWallArea = drive.actionBuilder(initialPose)
+//                .strafeTo(new Vector2d(-52, 53));
+        TrajectoryActionBuilder moveToParkPosition = drive.actionBuilder(initialPose)
                 .strafeTo(new Vector2d(-52, 60));
 
 
@@ -52,29 +53,30 @@ public class RedSidePreload extends TeleOpActionsRR {
                         actionControl.prepareClip().getAction()
                 ),
                 //clip the position
-                actionControl.clipClip().getAction()
+                actionControl.clipClip().getAction(),
+                actionControl.rest().getAction()
         );
 
-        Action humanPlayerClip = new SequentialAction(
-                //move to wall area and wall pickup
-                new ParallelAction(
-                        moveToWallArea.build(),
-                        actionControl.wallPickup().getAction()
-                ),
-                //close claw
-                actionControl.clawClose().getAction(),
-                //move to clip location & position (adjustable), and prepare clip
-                new ParallelAction(
-                        moveToClipLocationAdjust.build(),
-                        actionControl.prepareClip().getAction()
-                ),
-                //clip the position
-                actionControl.clipClip().getAction()
-        );
-
+//        Action humanPlayerClip = new SequentialAction(
+//                //move to wall area and wall pickup
+//                new ParallelAction(
+//                        moveToWallArea.build(),
+//                        actionControl.wallPickup().getAction()
+//                ),
+//                //close claw
+//                actionControl.clawClose().getAction(),
+//                //move to clip location & position (adjustable), and prepare clip
+//                new ParallelAction(
+//                        moveToClipLocationAdjust.build(),
+//                        actionControl.prepareClip().getAction()
+//                ),
+//                //clip the position
+//                actionControl.clipClip().getAction()
+//        );
+//
         Action park = new ParallelAction(
                 moveToParkPosition.build(),
-                actionControl.drop().getAction()
+                actionControl.rest().getAction()
         );
         // actions that need to happen on init; for instance, a claw tightening.
 
@@ -108,7 +110,7 @@ public class RedSidePreload extends TeleOpActionsRR {
                 new ParallelAction(
                         new SequentialAction(
                                 preloadClip,
-                                humanPlayerClip,
+//                                humanPlayerClip,
                                 park
                         ), new InstantAction(drive.localizer::update)
                 )
