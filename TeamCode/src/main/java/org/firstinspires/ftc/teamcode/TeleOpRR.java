@@ -68,7 +68,7 @@ public class TeleOpRR extends TeleOpActionsRR {
                         actionControl.zeroExtension().getAction()
                 )
         );
-        myVisionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), redProcessor);
+//        myVisionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), redProcessor);
 
 
         waitForStart();
@@ -85,8 +85,8 @@ public class TeleOpRR extends TeleOpActionsRR {
 
             // Set drive powers from gamepad input
             PoseVelocity2d driveControl = new PoseVelocity2d(
-                    new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x),
-                    -gamepad1.right_stick_x
+                    new Vector2d(-gamepad1.left_stick_y*0.7, -gamepad1.left_stick_x*0.7),
+                    -gamepad1.right_stick_x*0.6
             );
             drive.setDrivePowers(driveControl);
 
@@ -117,7 +117,7 @@ public class TeleOpRR extends TeleOpActionsRR {
             }
             if (gamepad1.dpad_down) {
                 //runningActions.add(actionControl.pickupSample());
-                addAction(actionControl.pickupSample());
+                addAction(actionControl.pickupSample(drive, pose));
             }
             if (gamepad1.dpad_up) {
                 // TODO : Add a function for killing all actions
@@ -133,33 +133,27 @@ public class TeleOpRR extends TeleOpActionsRR {
             // Secondary Controller actions
             if (gamepad2.dpad_up) {
                 //runningActions.add(actionControl.manualUp());
-                addAction(actionControl.manualUp());
+                addAction(actionControl.manualExtend());
             }
             if (gamepad2.dpad_down) {
                 //runningActions.add(actionControl.manualDown());
-                addAction(actionControl.manualDown());
+                addAction(actionControl.manualRetract());
             }
             if (gamepad2.dpad_right) {
                 //runningActions.add(actionControl.manualExtend());
-                addAction(actionControl.manualExtend());
+                addAction(actionControl.manualUp());
             }
             if (gamepad2.dpad_left) {
                 //runningActions.add(actionControl.manualRetract());
-                addAction(actionControl.manualRetract());
+                addAction(actionControl.manualDown());
             }
             if (gamepad2.triangle) {
                 //runningActions.add(actionControl.manualClawAngle(-0.01));
-                addAction(actionControl.manualClawAngle(-0.01));
+                addAction(actionControl.manualClawAngle(-0.019));
             }
-            if (gamepad2.square) {
+            if (gamepad2.circle) {
                 //runningActions.add(actionControl.manualClawAngle(0.01));
-                addAction(actionControl.manualClawAngle(0.01));
-            } if (gamepad2.cross) {
-                //runningActions.add(actionControl.hangPrepare());
-                addAction(actionControl.hangPrepare());
-            } if (gamepad2.circle) {
-                //runningActions.add(actionControl.hang());
-                addAction(actionControl.hang());
+                addAction(actionControl.manualClawAngle(0.019));
             }
 
             // Filter duplicates

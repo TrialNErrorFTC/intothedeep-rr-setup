@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.nonRR;
 public enum States {
     INITIAL(0, 0, 0.0, 0),
     DEFAULT(0, 0, 0.0, (double) 225/300),
-    PICKUP(135, 2000, 0.8,  (double) 196/300),
-    WALLPICKUP(135, 500, 0.31,  (double) 196/300),
+    PICKUP(140, 2000, 0.8,  (double) 196/300),
+    WALLPICKUP(127, 500, 0.31,  (double) 196/300),
     DROP(690, 2900, 0.0,  (double) 225/300),
     PREPARECLIP (650, 300, 0.0, (double) 225/300),
     CLIPCLIP (665, 1050, 0.0, (double) 225/300),

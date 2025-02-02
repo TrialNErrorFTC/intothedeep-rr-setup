@@ -10,9 +10,12 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Trajectory;
+import com.acmerobotics.roadrunner.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -50,8 +53,8 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
     // Store current motor value targets
     public int currentExtensionPosition = 0;
     public int currentAnglePosition = 0;
-    private int angleIncrement = 30;
-    private int extensionIncrement = 30;
+    private int angleIncrement = 15;
+    private int extensionIncrement = 28;
     private double extendRatio = 28.0 / 42;
 
     private RedProcessor.Alignment alignment;
@@ -485,18 +488,34 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
         public class OpenCVPickup implements Action{
             boolean initialized = false;
+            MecanumDrive drive;
+            Pose2d pose;
+            double anglePos;
+            Action action;
 
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
                     initialized = true;
                 }
+                anglePos = States.PICKUP.anglePosition + alignment.angle/300;
 
-                return false;
+                controlRR.angle.setPosition(anglePos);
+
+                return action.run(telemetryPacket) && !(controlRR.angle.getPosition() == anglePos);
             }
+
+             public OpenCVPickup(MecanumDrive drive, Pose2d pose) {
+                this.drive = drive;
+                this.pose = pose;
+                this.action = drive.actionBuilder(pose)
+                         //change with conversion
+                         .strafeTo(new Vector2d(pose.position.x + (alignment.deltaX * 72/144), pose.position.y + (alignment.deltaY * 72/144)))
+                         .build();
+             }
         }
-        public Result openCVPickup(){
-            return new Result(new OpenCVPickup(), "openCVPickup");
+        public Result openCVPickup(MecanumDrive drive, Pose2d pose){
+            return new Result(new OpenCVPickup(drive, pose), "openCVPickup");
         }
 
         public class ZeroExtension implements Action{
@@ -610,7 +629,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             ), "drop");
         }
 
-        public class DriveControl implements Action{
+        public class DriveControl implements Action {
             boolean initialized = false;
             private MecanumDrive drive;
             private Action action;
@@ -663,9 +682,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                             setServoAnglePosition(States.PICKUP.anglePosition).getAction()
                     ),
                     setAnglePosition(States.PICKUP.motorAnglePosition).getAction(),
-                    setAnglePosition(States.PICKUP.motorAnglePosition).getAction(),
                     setExtensionPosition(States.PICKUP.motorExtensionPosition).getAction(),
-                    setAnglePosition(States.PICKUP.motorAnglePosition).getAction(),
                     setSwingPosition(States.PICKUP.swingPosition).getAction()
             ), "pickup");
         }
@@ -692,8 +709,9 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                             clawOpen().getAction(),
                             setServoAnglePosition(0.5).getAction()
                     ),
-                    setExtensionPosition(States.PREPARECLIP.motorExtensionPosition).getAction(),
-                    rest().getAction()
+                    setExtensionPosition(States.PREPARECLIP.motorExtensionPosition).getAction()
+                    //pickup().getAction()
+                    //rest().getAction()
             ), "clipClip");
         }
 
@@ -709,10 +727,11 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             ), "rest");
         }
 
-        public Result pickupSample() {
+        public Result pickupSample(MecanumDrive drive, Pose2d pose) {
             return new Result(new SequentialAction(
+//                    ope(drive, pose).getAction(),
+//                    new SleepAction(1),
                     setAnglePosition(83).getAction(),
-                    new SleepAction(0.1),
                     clawClose().getAction(),
                     setAnglePosition(States.PICKUP.motorAnglePosition).getAction()
                     //new SleepAction(0.1)
@@ -765,6 +784,16 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             }
         }
 
+        private Mat output;
+        private Mat mask;
+        private Mat mask1;
+        private Mat mask2;
+        private Mat hierarchy;
+        private List<MatOfPoint> contours;
+        private List<RotatedRect> rects;
+        private MatOfPoint2f contour2f;
+        private MatOfPoint2f approx;
+
         @Override
         public Object processFrame(Mat frame, long captureTimeNanos) {
             if (frame == null) return null;
@@ -780,7 +809,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
             // Convert the frame to HSV
             Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGB2HSV);
-            Mat output = new Mat();
+            output = new Mat();
 
             int erode_int = 5;
             int dilate_int = 9;
@@ -791,21 +820,22 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                 Scalar lower2 = new Scalar(170, 20, 100);
                 Scalar upper2 = new Scalar(179, 255, 255);
 
-                Mat mask1 = new Mat();
-                Mat mask2 = new Mat();
+                mask1 = new Mat();
+                mask2 = new Mat();
                 Core.inRange(frame, lower1, upper1, mask1);
                 Core.inRange(frame, lower2, upper2, mask2);
 
-                Mat mask = new Mat();
+                mask = new Mat();
                 Core.add(mask1, mask2, mask);
 
                 frame.copyTo(output, mask);
+
             } else if (COLOR.equals("BLUE")) {
                 Scalar lower = new Scalar(100, 50, 0);
                 Scalar upper = new Scalar(140, 255, 255);
                 erode_int = 9;
                 dilate_int = 13;
-                Mat mask = new Mat();
+                mask = new Mat();
                 Core.inRange(frame, lower, upper, mask);
 
                 frame.copyTo(output, mask);
@@ -813,7 +843,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                 Scalar lower = new Scalar(10, 90, 50);
                 Scalar upper = new Scalar(50, 255, 255);
 
-                Mat mask = new Mat();
+                mask = new Mat();
                 Core.inRange(frame, lower, upper, mask);
 
                 frame.copyTo(output, mask);
@@ -830,9 +860,9 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             Imgproc.cvtColor(output, output, Imgproc.COLOR_BGR2GRAY);
 
             // Find contours
-            List<MatOfPoint> contours = new ArrayList<>();
-            List<RotatedRect> rects = new ArrayList<>();
-            Mat hierarchy = new Mat();
+            contours = new ArrayList<>();
+            rects = new ArrayList<>();
+            hierarchy = new Mat();
             Imgproc.findContours(output, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
             Point imgCenter = new Point(frame.cols() / 2.0, frame.rows() / 2.0);
@@ -841,8 +871,8 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
             // Find the closest rectangle to the center of the image.
             for (MatOfPoint contour : contours) {
-                MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
-                MatOfPoint2f approx = new MatOfPoint2f();
+                contour2f = new MatOfPoint2f(contour.toArray());
+                approx = new MatOfPoint2f();
                 Imgproc.approxPolyDP(contour2f, approx, 0.02 * Imgproc.arcLength(contour2f, true), true);
 
                 // We only care about rectangles with 4 corners that are close to the expected size.
