@@ -46,7 +46,6 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
     private double anglePower = 0.5;
     private double extensionHoldPower = 0.5;
     private double angleHoldPower = 0.6;
-
     private int extensionTolerance = 3;
     private int angleTolerance = 4;
 
@@ -720,9 +719,9 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                     lightOff().getAction(),
                     new ParallelAction(
                             setSwingPosition(1.0).getAction(),
-                            setExtensionPosition(50).getAction()
+                            setExtensionPosition(20).getAction()
                     ),
-                    setAnglePosition(80).getAction(),
+                    setAnglePosition(100).getAction(),
                     setSwingPosition(0.5).getAction()
             ), "rest");
         }
@@ -793,6 +792,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
         private List<RotatedRect> rects;
         private MatOfPoint2f contour2f;
         private MatOfPoint2f approx;
+        public String COLOR = "RED";
 
         @Override
         public Object processFrame(Mat frame, long captureTimeNanos) {
@@ -800,7 +800,6 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
 
             double BLOCK_HEIGHT = 100;
             double BLOCK_WIDTH = 50;
-            String COLOR = "RED";
             double INCHES_PER_PIXEL = 0.014625;
 
             // Set a point at 1/3 from the bottom of the image and 1/2 from the left.
@@ -902,6 +901,8 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             double delta_x = 0;
             double delta_y = 0;
             double angle = 0;
+
+            frame.release();
 
             if (minRect != null) {
                 delta_x = target_point.x - minRect.center.x;

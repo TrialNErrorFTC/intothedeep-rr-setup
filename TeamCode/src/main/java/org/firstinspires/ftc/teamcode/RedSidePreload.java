@@ -25,7 +25,7 @@ public class RedSidePreload extends TeleOpActionsRR {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Pose2d initialPose = new Pose2d(3,-60, Math.toRadians(90));
+        Pose2d initialPose = new Pose2d(-22+8,72-8  , Math.toRadians(270));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         ActionControl actionControl = new ActionControl();
         Pose2d pose;
@@ -34,17 +34,19 @@ public class RedSidePreload extends TeleOpActionsRR {
         // vision here that outputs position
 
         //All TrajectoryActionsBuilders here
-        //DONE: Set the drive positions to here
+        //DONE: Set the drive positions to
         TrajectoryActionBuilder moveToClipLocation = drive.actionBuilder(initialPose)
-                .strafeTo(new Vector2d(3, -38))
-                .turnTo(Math.toRadians(270))
-                .strafeTo(new Vector2d(3, -34));
+                .lineToY(56)
+                .turnTo(Math.toRadians(90))
+                .strafeTo(new Vector2d(3, 38))
+                .strafeTo(new Vector2d(3, 30));
+//                .turnTo(Math.toRadians(270));
 //        TrajectoryActionBuilder moveToClipLocationAdjust = drive.actionBuilder(initialPose)
 //                .strafeTo(new Vector2d(0, 20 + 9));
 //        TrajectoryActionBuilder moveToWallArea = drive.actionBuilder(initialPose)
 //                .strafeTo(new Vector2d(-52, 53));
         TrajectoryActionBuilder moveToParkPosition = drive.actionBuilder(initialPose)
-                .strafeTo(new Vector2d(58, -50))
+                .strafeTo(new Vector2d(-52, 60))
                 .turnTo(Math.toRadians(270));
 
 
@@ -113,7 +115,6 @@ public class RedSidePreload extends TeleOpActionsRR {
                 new ParallelAction(
                         new SequentialAction(
                                 preloadClip,
-//                                humanPlayerClip,
                                 park
                         ), new InstantAction(drive.localizer::update)
                 )

@@ -32,6 +32,7 @@ public class TeleOpRR extends TeleOpActionsRR {
     VisionPortal myVisionPortal;
     RedProcessor redProcessor;
 
+    String[] exceptions = {"manualClawAngle"};
 
 
     public void addAction(ActionControl.Result result) {
@@ -120,7 +121,7 @@ public class TeleOpRR extends TeleOpActionsRR {
                 addAction(actionControl.pickupSample(drive, pose));
             }
             if (gamepad1.dpad_up) {
-                // TODO : Add a function for killing all actions
+                runningActions.clear();
             }
             if (gamepad1.dpad_left) {
                 //runningActions.add(actionControl.drop());
