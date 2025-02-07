@@ -690,6 +690,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
             return new Result(new SequentialAction(
                     new ParallelAction(
                             setSwingPosition(States.PREPARECLIP.swingPosition).getAction(),
+                            setServoAnglePosition(States.PREPARECLIP.anglePosition).getAction(),
                             setExtensionPosition(100).getAction()
                     ),
                     new ParallelAction(
@@ -704,9 +705,9 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                     setAnglePosition(States.CLIPCLIP.motorAnglePosition).getAction(),
                     setExtensionPosition(States.CLIPCLIP.motorExtensionPosition).getAction(),
                     new ParallelAction(
-                            setAnglePosition(States.CLIPCLIP.motorAnglePosition-75).getAction(),
+                            setAnglePosition(States.CLIPCLIP.motorAnglePosition-70).getAction(),
                             clawOpen().getAction(),
-                            setServoAnglePosition(0.5).getAction()
+                            setServoAnglePosition(States.CLIPCLIP.anglePosition).getAction()
                     ),
                     setExtensionPosition(States.PREPARECLIP.motorExtensionPosition).getAction()
                     //pickup().getAction()
