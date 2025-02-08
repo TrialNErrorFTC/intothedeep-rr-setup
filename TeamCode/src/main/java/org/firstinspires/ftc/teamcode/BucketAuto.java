@@ -30,7 +30,7 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 
 @Autonomous
-public class BClipAuto extends TeleOpActionsRR {
+public class BucketAuto extends TeleOpActionsRR {
     FtcDashboard dash = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
     @Override
@@ -93,9 +93,5 @@ public class BClipAuto extends TeleOpActionsRR {
         waitForStart();
 
         if (isStopRequested()) return;
-
-        Actions.runBlocking(
-
-        );
     }
 }
