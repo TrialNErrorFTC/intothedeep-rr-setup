@@ -6,8 +6,8 @@ public enum States {
     PICKUP(160, 1600, 0.9,  (double) 196/300),
     WALLPICKUP(130, 200, 0.31,  (double) 196/300),
     DROP(690, 2900, 0.0,  (double) 225/300),
-    PREPARECLIP (640, 310, 0.0, (double) 196/300),
-    CLIPCLIP (665, 1100, 0.0, (double) 196/300),
+    PREPARECLIP (600, 275, 0.0, (double) 196/300),
+    CLIPCLIP (665, 1150, 0.0, (double) 196/300),
     HANGPREPARE (680, 2700, 0.8, (double) 225/300),
     HANG (300, 1000, 0.0, (double) 225/300),
 

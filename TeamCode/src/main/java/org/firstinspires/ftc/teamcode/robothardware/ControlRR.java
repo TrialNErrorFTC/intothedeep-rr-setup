@@ -33,7 +33,7 @@ public class ControlRR {
 
     public TouchSensor limitSwitchAngle;
     public TouchSensor limitSwitchExtension;
-    public DigitalChannel light;
+//    public Servo light;
 
 
 
@@ -89,6 +89,6 @@ public class ControlRR {
         limitSwitchAngle = hardwareMap.touchSensor.get("limitAngle");
         limitSwitchExtension = hardwareMap.touchSensor.get("limitExtension");
 
-        light = hardwareMap.digitalChannel.get("light");
+//        light = hardwareMap.servo.get("light");
     }
 }

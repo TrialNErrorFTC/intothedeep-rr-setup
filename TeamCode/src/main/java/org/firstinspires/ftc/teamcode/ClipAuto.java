@@ -61,94 +61,114 @@ public class ClipAuto extends TeleOpActionsRR {
         ActionControl actionControl = new ActionControl();
         Pose2d pose;
 
+
         VelConstraint sonicVel = new MinVelConstraint(Arrays.asList(
-                new TranslationalVelConstraint(120),
+                new TranslationalVelConstraint(150),
                 new AngularVelConstraint(Math.PI)
         ));
-        AccelConstraint sonicAcc = new ProfileAccelConstraint(-45, 70);
-
-        VelConstraint fastVel = new MinVelConstraint(Arrays.asList(
-                new TranslationalVelConstraint(100),
-                new AngularVelConstraint(Math.PI)
-        ));
-        AccelConstraint fastAcc = new ProfileAccelConstraint(-45, 60);
-
+        AccelConstraint sonicAcc = new ProfileAccelConstraint(-170, 150);
+//
+        //        VelConstraint fastVel = new MinVelConstraint(Arrays.asList(
+//                new TranslationalVelConstraint(80),
+//                new AngularVelConstraint(Math.PI)
+//        ));
+//        AccelConstraint fastAcc = new ProfileAccelConstraint(-45, 70);
+//
         VelConstraint baseVel = new MinVelConstraint(Arrays.asList(
-                new TranslationalVelConstraint(70),
+                new TranslationalVelConstraint(130),
                 new AngularVelConstraint(Math.PI)
         ));
-        AccelConstraint baseAcc = new ProfileAccelConstraint(-30, 20);
+        AccelConstraint baseAcc = new ProfileAccelConstraint(-110, 110);
 
-        double pp = 53;
+
+        VelConstraint travelVel = new MinVelConstraint(Arrays.asList(
+                new TranslationalVelConstraint(40),
+                new AngularVelConstraint(Math.PI)
+        ));
+        AccelConstraint travelAcc = new ProfileAccelConstraint(-30, 30);
+
+
+//        VelConstraint sonicVel = null;
+//        AccelConstraint sonicAcc = null;
+        VelConstraint fastVel = null;
+        AccelConstraint fastAcc = null;
+//        VelConstraint baseVel = null;
+//        AccelConstraint baseAcc = null;
+
+        double pp = 54;
+
 
         TrajectoryActionBuilder clip1 = drive.actionBuilder(initialPose)
-                .splineToLinearHeading(new Pose2d(-2, 30, Math.toRadians(90)), Math.toRadians(270), baseVel, baseAcc)
+                .splineToLinearHeading(new Pose2d(-2, 31, Math.toRadians(90)), Math.toRadians(270), null, null)
                 .endTrajectory();
 
         TrajectoryActionBuilder pushBlocks1 = clip1.fresh()
                 .setReversed(false)
-                .splineToLinearHeading(new Pose2d(-27,36, Math.toRadians(90)), Math.toRadians(170), fastVel, baseAcc)
-                .splineToLinearHeading(new Pose2d(-44,7, Math.toRadians(90)), Math.toRadians(170), baseVel, baseAcc)
+                //.splineToLinearHeading(new Pose2d(-23.5,37, Math.toRadians(90)), Math.toRadians(170), travelVel, travelAcc)
+                //.splineToLinearHeading(new Pose2d(-45,7, Math.toRadians(90)), Math.toRadians(-180), travelVel, travelAcc)
+
+                .splineToConstantHeading(new Vector2d(-22,37), Math.toRadians(170), travelVel, travelAcc)
+                .splineToConstantHeading(new Vector2d(-45,7), Math.toRadians(-180), travelVel, travelAcc)
 
                 .setReversed(true)
-                .strafeTo(new Vector2d(-45,49), sonicVel, sonicAcc)
+                .strafeTo(new Vector2d(-45,45), sonicVel, sonicAcc)
 
                 .setReversed(true)
                 .splineToConstantHeading(new Vector2d(-55,7), Math.toRadians(-150), fastVel, fastAcc)
+                .setReversed(false)
                 .strafeTo(new Vector2d(-55,49), sonicVel, sonicAcc)
-
-                .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-64,7), Math.toRadians(-145), fastVel, fastAcc)
-                .strafeTo(new Vector2d(-64.5,49), sonicVel, sonicAcc)
                 //.waitSeconds(0.1)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToPickup2 = pushBlocks1.fresh()
-                .strafeTo(new Vector2d(-64.5, 43), baseVel, baseAcc)
+                .strafeTo(new Vector2d(-55, 38), baseVel, baseAcc)
                 // Move to wall pickup
-                .strafeTo(new Vector2d(-64.5, pp), baseVel, baseAcc)
+                .strafeTo(new Vector2d(-55, pp), baseVel, baseAcc)
                 //.waitSeconds(0.1)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToClip2 = moveToPickup2.fresh()
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-4, 32), Math.toRadians(270), fastVel, fastAcc)
+                .splineTo(new Vector2d(-4, 30), Math.toRadians(270), fastVel, fastAcc)
                 //.waitSeconds(0.1)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToPickup3 = moveToClip2.fresh()
                 .setReversed(false)
-                .splineToConstantHeading(new Vector2d(-48, pp), Math.toRadians(90), baseVel, baseAcc)
+                .splineTo(new Vector2d(-48, pp-10), Math.toRadians(90), baseVel, baseAcc)
+                .strafeTo(new Vector2d(-48, pp), travelVel, baseAcc)
                 //.waitSeconds(0.1)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToClip3 = moveToPickup3.fresh()
                 //.waitSeconds(1)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-2, 32), Math.toRadians(270), baseVel, baseAcc)
+                .splineTo(new Vector2d(-2, 30), Math.toRadians(270), baseVel, baseAcc)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToPickup4 = moveToClip3.fresh()
                 .setReversed(false)
-                .splineToConstantHeading(new Vector2d(-48, pp), Math.toRadians(90), baseVel, baseAcc)
+                .splineTo(new Vector2d(-48, pp-10), Math.toRadians(90), baseVel, baseAcc)
+                .strafeTo(new Vector2d(-48, pp), travelVel, baseAcc)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToClip4 = moveToPickup4.fresh()
                 //.waitSeconds(1)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(0, 32), Math.toRadians(270), baseVel, baseAcc)
+                .splineTo(new Vector2d(0, 30), Math.toRadians(270), baseVel, baseAcc)
                 .endTrajectory();
 
-        TrajectoryActionBuilder moveToPickup5 = moveToClip4.fresh()
-                .setReversed(false)
-                .splineToConstantHeading(new Vector2d(-48, pp), Math.toRadians(90), baseVel, baseAcc)
-                .endTrajectory();
+        TrajectoryActionBuilder moveToPickup5 = moveToClip4.fresh();
+//                .setReversed(false)
+//                .splineToConstantHeading(new Vector2d(-48, pp), Math.toRadians(90), baseVel, baseAcc)
+//                .endTrajectory();
 
-        TrajectoryActionBuilder moveToClip5 = moveToPickup5.fresh()
-                //.waitSeconds(1)
-                .setReversed(true)
-                .splineToConstantHeading(new Vector2d(2, 32), Math.toRadians(270), baseVel, baseAcc)
-                .endTrajectory();
+        TrajectoryActionBuilder moveToClip5 = moveToPickup5.fresh();
+        //.waitSeconds(1)
+//                .setReversed(true)
+//                .splineToConstantHeading(new Vector2d(2, 30), Math.toRadians(270), baseVel, baseAcc)
+//                .endTrajectory();
+
 
         // Build all actions before waitForStart()
         Action clip1Action = clip1.build();
@@ -191,61 +211,84 @@ public class ClipAuto extends TeleOpActionsRR {
                         new SequentialAction(
                                 new ParallelAction(
                                         clip1Action,
-                                        new SequentialAction(
-                                                actionControl.prepareClip().getAction(),
-                                                new SleepAction(2)
-                                        )
+                                        actionControl.prepareClip().getAction()
                                 ),
-                                actionControl.clipClip().getAction(),
-
                                 new ParallelAction(
-                                        pushBlocks1Action,
-                                        actionControl.rest().getAction()
-                                ),
+                                        new SequentialAction(
+                                                new SleepAction(2),
+                                                pushBlocks1Action
+                                        ),
+                                        new SequentialAction(
+                                                actionControl.clipClip().getAction(),
+                                                actionControl.rest().getAction()
+                                        )
 
+                                ),
                                 new ParallelAction(
                                         moveToPickup2Action,
                                         actionControl.wallPickup().getAction()
                                 ),
+                                new SleepAction(0.2),
                                 actionControl.clawClose().getAction(),
+                                new SleepAction(0.2),
                                 new ParallelAction(
                                         moveToClip2Action,
                                         actionControl.prepareClip().getAction()
                                 ),
-                                actionControl.clipClip().getAction(),
 
                                 new ParallelAction(
-                                        moveToPickup3Action,
-                                        actionControl.wallPickup().getAction()
+                                        new SequentialAction(
+                                                new SleepAction(3),
+                                                moveToPickup3Action
+                                        ), new SequentialAction (
+                                            actionControl.clipClip().getAction(),
+                                            actionControl.wallPickup().getAction()
+                                        )
                                 ),
+                                new SleepAction(0.2),
                                 actionControl.clawClose().getAction(),
+                                new SleepAction(0.2),
                                 new ParallelAction(
                                         moveToClip3Action,
                                         actionControl.prepareClip().getAction()
                                 ),
-                                actionControl.clipClip().getAction(),
 
                                 new ParallelAction(
-                                        moveToPickup4Action,
+                                        new SequentialAction(
+                                                new SleepAction(3),
+                                                moveToPickup4Action
+                                        ), new SequentialAction (
+                                        actionControl.clipClip().getAction(),
                                         actionControl.wallPickup().getAction()
+                                    )
                                 ),
+                                new SleepAction(0.2),
                                 actionControl.clawClose().getAction(),
+                                new SleepAction(0.2),
+
+                                new ParallelAction(
+                                        moveToClip4Action,
+                                        actionControl.prepareClip().getAction()
+                                ),
+
+                                new ParallelAction(
+                                    new SequentialAction(
+                                        new SleepAction(3),
+                                        moveToPickup3Action
+                                    ), new SequentialAction (
+                                        actionControl.clipClip().getAction(),
+                                        actionControl.wallPickup().getAction()
+                                    )
+                                ),
+                                new SleepAction(0.2),
+                                actionControl.clawClose().getAction(),
+                                new SleepAction(0.2),
                                 new ParallelAction(
                                         moveToClip4Action,
                                         actionControl.prepareClip().getAction()
                                 ),
                                 actionControl.clipClip().getAction(),
-
-                                new ParallelAction(
-                                        moveToPickup5Action,
-                                        actionControl.wallPickup().getAction()
-                                ),
-                                actionControl.clawClose().getAction(),
-                                new ParallelAction(
-                                        moveToClip5Action,
-                                        actionControl.prepareClip().getAction()
-                                ),
-                                actionControl.clipClip().getAction()
+                                actionControl.rest().getAction()
                         ), new InstantAction(drive.localizer::update)
                 )
         );

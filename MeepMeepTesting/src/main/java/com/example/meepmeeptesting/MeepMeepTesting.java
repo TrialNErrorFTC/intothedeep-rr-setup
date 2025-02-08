@@ -26,100 +26,118 @@ public class MeepMeepTesting {
 
         RoadRunnerBotEntity drive = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(120, 100, Math.toRadians(180), Math.toRadians(180), 16)
+                .setConstraints(100, 100, Math.toRadians(180), Math.toRadians(180), 16)
                 .setDimensions(16.25,16)
                 .setStartPose(new Pose2d(-22+13.5,72-10, Math.toRadians(180)))
                 .build();
 
+
         VelConstraint sonicVel = new MinVelConstraint(Arrays.asList(
-                new TranslationalVelConstraint(120),
+                new TranslationalVelConstraint(150),
                 new AngularVelConstraint(Math.PI)
         ));
-        AccelConstraint sonicAcc = new ProfileAccelConstraint(-45, 70);
-
-        VelConstraint fastVel = new MinVelConstraint(Arrays.asList(
-                new TranslationalVelConstraint(100),
-                new AngularVelConstraint(Math.PI)
-        ));
-        AccelConstraint fastAcc = new ProfileAccelConstraint(-45, 60);
-
+        AccelConstraint sonicAcc = new ProfileAccelConstraint(-100, 100);
+//
+        //        VelConstraint fastVel = new MinVelConstraint(Arrays.asList(
+//                new TranslationalVelConstraint(80),
+//                new AngularVelConstraint(Math.PI)
+//        ));
+//        AccelConstraint fastAcc = new ProfileAccelConstraint(-45, 70);
+//
         VelConstraint baseVel = new MinVelConstraint(Arrays.asList(
-                new TranslationalVelConstraint(70),
+                new TranslationalVelConstraint(110),
                 new AngularVelConstraint(Math.PI)
         ));
-        AccelConstraint baseAcc = new ProfileAccelConstraint(-30, 30);
+        AccelConstraint baseAcc = new ProfileAccelConstraint(-120, 120);
+
+        VelConstraint travelVel = new MinVelConstraint(Arrays.asList(
+                new TranslationalVelConstraint(90),
+                new AngularVelConstraint(Math.PI)
+        ));
+        AccelConstraint travelAcc = new ProfileAccelConstraint(-60, 60);
+
+
+//        VelConstraint sonicVel = null;
+//        AccelConstraint sonicAcc = null;
+        VelConstraint fastVel = null;
+        AccelConstraint fastAcc = null;
+//        VelConstraint baseVel = null;
+//        AccelConstraint baseAcc = null;
 
         double pp = 53;
 
+
         TrajectoryActionBuilder clip1 = drive.getDrive().actionBuilder(drive.getPose())
-                .splineToLinearHeading(new Pose2d(-2, 30, Math.toRadians(90)), Math.toRadians(270), baseVel, baseAcc)
+                .splineToLinearHeading(new Pose2d(-2, 31, Math.toRadians(90)), Math.toRadians(270), null, null)
                 .endTrajectory();
 
         TrajectoryActionBuilder pushBlocks1 = clip1.fresh()
                 .setReversed(false)
-                .splineToLinearHeading(new Pose2d(-25,36, Math.toRadians(90)), Math.toRadians(160), fastVel, fastAcc)
-                .splineToLinearHeading(new Pose2d(-44,7, Math.toRadians(90)), Math.toRadians(170), baseVel, baseAcc)
+                //.splineToLinearHeading(new Pose2d(-23.5,37, Math.toRadians(90)), Math.toRadians(170), travelVel, travelAcc)
+                //.splineToLinearHeading(new Pose2d(-45,7, Math.toRadians(90)), Math.toRadians(-180), travelVel, travelAcc)
+
+                .splineTo(new Vector2d(-23.5,37), Math.toRadians(170), travelVel, travelAcc)
+                .splineTo(new Vector2d(-45,7), Math.toRadians(-180), travelVel, travelAcc)
+                .turnTo(Math.toRadians(90))
 
                 .setReversed(true)
-                .strafeTo(new Vector2d(-45,49), sonicVel, sonicAcc)
+                .strafeTo(new Vector2d(-45,45), sonicVel, sonicAcc)
 
                 .setReversed(true)
                 .splineToConstantHeading(new Vector2d(-55,7), Math.toRadians(-150), fastVel, fastAcc)
+                .setReversed(false)
                 .strafeTo(new Vector2d(-55,49), sonicVel, sonicAcc)
-
-                .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-64,7), Math.toRadians(-145), fastVel, fastAcc)
-                .strafeTo(new Vector2d(-64.5,49), sonicVel, sonicAcc)
                 //.waitSeconds(0.1)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToPickup2 = pushBlocks1.fresh()
-                .strafeTo(new Vector2d(-64.5, 43), baseVel, baseAcc)
+                .strafeTo(new Vector2d(-55, 38), baseVel, baseAcc)
                 // Move to wall pickup
-                .strafeTo(new Vector2d(-64.5, pp), baseVel, baseAcc)
+                .strafeTo(new Vector2d(-55, pp), baseVel, baseAcc)
                 //.waitSeconds(0.1)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToClip2 = moveToPickup2.fresh()
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-4, 30), Math.toRadians(270), fastVel, fastAcc)
+                .splineTo(new Vector2d(-4, 30), Math.toRadians(270), fastVel, fastAcc)
                 //.waitSeconds(0.1)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToPickup3 = moveToClip2.fresh()
                 .setReversed(false)
-                .splineToConstantHeading(new Vector2d(-48, pp), Math.toRadians(90), fastVel, fastAcc)
+                .splineToConstantHeading(new Vector2d(-48, pp-10), Math.toRadians(90), baseVel, baseAcc)
+                .strafeTo(new Vector2d(-48, pp), travelVel, baseAcc)
                 //.waitSeconds(0.1)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToClip3 = moveToPickup3.fresh()
                 //.waitSeconds(1)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-2, 30), Math.toRadians(270), fastVel, fastAcc)
+                .splineTo(new Vector2d(-2, 30), Math.toRadians(270), baseVel, baseAcc)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToPickup4 = moveToClip3.fresh()
                 .setReversed(false)
-                .splineToConstantHeading(new Vector2d(-48, pp), Math.toRadians(90), fastVel, fastAcc)
+                .splineToConstantHeading(new Vector2d(-48, pp-10), Math.toRadians(90), baseVel, baseAcc)
+                .strafeTo(new Vector2d(-48, pp), travelVel, baseAcc)
                 .endTrajectory();
 
         TrajectoryActionBuilder moveToClip4 = moveToPickup4.fresh()
                 //.waitSeconds(1)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(0, 30), Math.toRadians(270), fastVel, fastAcc)
+                .splineTo(new Vector2d(0, 30), Math.toRadians(270), baseVel, baseAcc)
                 .endTrajectory();
 
-        TrajectoryActionBuilder moveToPickup5 = moveToClip4.fresh()
-                .setReversed(false)
-                .splineToConstantHeading(new Vector2d(-48, pp), Math.toRadians(90), fastVel, fastAcc)
-                .endTrajectory();
+        TrajectoryActionBuilder moveToPickup5 = moveToClip4.fresh();
+//                .setReversed(false)
+//                .splineToConstantHeading(new Vector2d(-48, pp), Math.toRadians(90), baseVel, baseAcc)
+//                .endTrajectory();
 
-        TrajectoryActionBuilder moveToClip5 = moveToPickup5.fresh()
-                //.waitSeconds(1)
-                .setReversed(true)
-                .splineToConstantHeading(new Vector2d(2, 30), Math.toRadians(270), fastVel, fastAcc)
-                .endTrajectory();
-
+        TrajectoryActionBuilder moveToClip5 = moveToPickup5.fresh();
+        //.waitSeconds(1)
+//                .setReversed(true)
+//                .splineToConstantHeading(new Vector2d(2, 30), Math.toRadians(270), baseVel, baseAcc)
+//                .endTrajectory();
 
 
         // Build all actions before waitForStart()

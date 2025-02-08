@@ -476,7 +476,7 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
                     initialized = true;
                 }
 
-                controlRR.claw.setPosition(0.35);
+                controlRR.claw.setPosition(0.33);
 
                 return false;
             }
@@ -606,17 +606,19 @@ public abstract class TeleOpActionsRR extends LinearOpMode {
         }
 
         public Result lightOff() {
-            return new Result(new SequentialAction(
-                    new InstantAction(() -> controlRR.light.setState(false)),
-                    new InstantAction(() -> controlRR.light.setMode(DigitalChannel.Mode.OUTPUT))
-            ), "lightOff");
+//            return new Result(new SequentialAction(
+//                    new InstantAction(() -> controlRR.light(false)),
+//                    new InstantAction(() -> controlRR.light.setMode(DigitalChannel.Mode.OUTPUT))
+//            ), "lightOff");
+            return new Result(new InstantAction(() ->  telemetry.addLine("Live Laugh Lockheed.")), "lightOff");
         }
 
         public Result lightOn() {
-            return new Result(new SequentialAction(
-                    new InstantAction(() -> controlRR.light.setState(true)),
-                    new InstantAction(() -> controlRR.light.setMode(DigitalChannel.Mode.OUTPUT))
-            ), "lightOn");
+//            return new Result(new SequentialAction(
+//                    new InstantAction(() -> controlRR.light.setState(true)),
+//                    new InstantAction(() -> controlRR.light.setMode(DigitalChannel.Mode.OUTPUT))
+//            ), "lightOn");
+            return new Result(new InstantAction(() ->  telemetry.addLine("Get the bag with Grumman.")), "lightOn");
         }
 
         public Result drop() {
